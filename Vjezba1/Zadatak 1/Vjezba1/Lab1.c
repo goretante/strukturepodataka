@@ -7,26 +7,38 @@
 #define FILE_ERROR_OPEN (-1)
 
 typedef struct _student {
-	char name[MAX_SIZE];
-	char surname[MAX_SIZE];
-	double points;
+    char name[MAX_SIZE];
+    char surname[MAX_SIZE];
+    double points;
 } Student;
 
+int brojacRedova(const char* imefilea) {
+    FILE* filePointer = NULL;
+    char buffer[MAX_LINE] = { 0 };
+    int counter = 0;
+
+    filePointer = fopen(imefilea, "r");
+
+    if (!filePointer) {
+        perror("Error opening file");
+        return FILE_ERROR_OPEN;
+    }
+
+    while (fgets(buffer, MAX_LINE, filePointer) != NULL) {
+        counter++;
+    }
+
+    fclose(filePointer);
+
+    return counter;
+}
 
 int main() {
+    int noRows = 0;
 
-	int noRows = 0;
-	FILE* filePointer = NULL;
-	char buffer[MAX_LINE] = { 0 };
+    noRows = brojacRedova("studenti.txt");
 
-	filePointer = fopen("students.txt", "r");
-	if (!filePointer) {
-		printf("Datoteka nije otvorena!");
-		return FILE_ERROR_OPEN;
-	}
+    printf("%d\n", noRows);
 
-	printf("%d", noRows);
-
-	fclose(filePointer);
-	return 0;
+    return 0;
 }
