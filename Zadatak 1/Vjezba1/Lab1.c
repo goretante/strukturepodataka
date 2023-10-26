@@ -77,7 +77,7 @@ int main() {
     FILE* test = NULL;
 
     while (test == NULL) {
-        printf("\nMolimo upisite ime datoteke sa listom studenata:\n");
+        printf("\nMolimo upišite ime datoteke sa listom studenata:\n");
         scanf("%s", imeDatoteke);
 
         test = fopen(imeDatoteke, "r");
@@ -87,7 +87,10 @@ int main() {
         }
         else {
             printf("\nUspjesno otvaranje datoteke!");
+            fclose(test);  // zatvori otvorenu datoteku
         }
+
+        getchar();
     }
 
     int brojStudenata = 0;
@@ -96,9 +99,18 @@ int main() {
     Student* stud = NULL;
     stud = (Student*)malloc(brojStudenata * sizeof(Student));
 
+    if (stud == NULL) {
+        printf("Alokacija neuspjesna.\n");
+    }
+    else {
+        printf("Alokacija je uspjesna.\n");
+    }
+
     citanjeStud(stud, brojStudenata, imeDatoteke);
 
     ispisStud(stud, brojStudenata);
+
+    free(stud);
 
     return 0;
 }
