@@ -1,0 +1,4 @@
+﻿  Zadatak2a.c
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak2a\Zadatak2a\Zadatak2a.c(50,1): warning C4047: 'initializing': 'char' differs in levels of indirection from 'char [2]'
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak2a\Zadatak2a\Zadatak2a.c(109,21): warning C4047: 'return': 'Position' differs in levels of indirection from 'int'
+  Zadatak2a.vcxproj -> C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak2a\Debug\Zadatak2a.exe
