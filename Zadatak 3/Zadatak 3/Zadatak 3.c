@@ -1,8 +1,8 @@
 /*
 3. Prethodnom zadatku dodati funkcije:
-	A. dinamièki dodaje novi element iza odreðenog elementa,
-	B. dinamièki dodaje novi element ispred odreðenog elementa,
-	C. sortira listu po prezimenima osoba,
+	A. dinamièki dodaje novi element iza odreðenog elementa, - solved
+	B. dinamièki dodaje novi element ispred odreðenog elementa, - solved
+	C. sortira listu po prezimenima osoba, - solved
 	D. upisuje listu u datoteku,
 	E. èita listu iz datoteke.
 */
@@ -45,8 +45,12 @@ Position FindLast(Position P);
 int AddOnEnd(Position P);
 int Menu(Position Head);
 char* enterSurname();
-int FindPerson(Position firstItem);
+Position FindPerson(Position firstItem);
+Position FindPrevious(Position P);
 int DeletePerson(Position P);
+int swapItems(Position first, Position second);
+int Sort(Position firstItem);
+
 
 // main
 int main() {
@@ -62,9 +66,11 @@ int main() {
 // functions
 int Menu(Position Head) {
 	char choice = "\0";
+	Position person = NULL;
+	Position previous = NULL;
 	while (1) {
 		printf("MENU:\n");
-		printf("Enter: A(dd to the front of the list)\n\tE(nd of the list add)\n\tF(ind person)\n\tD(elete)\n\tP(rint list)\n\t(e)X(it program)\n");
+		printf("Enter: A(dd to the front of the list)\n\tE(nd of the list add)\n\tI(nsert after person)\n\t(Insert) B(efore person)\n\tF(ind person)\n\tS(ort)\n\tD(elete)\n\tP(rint list)\n\t(e)X(it program)\n");
 		scanf(" %c", &choice);
 		switch (choice) {
 		case 'A':
@@ -77,7 +83,9 @@ int Menu(Position Head) {
 			continue;
 		case 'F':
 		case 'f':
-			FindPerson(Head->next);
+			person = FindPerson(Head->next);
+			person ? PrintPerson(person) : printf("Can't find person with that surname!\n");
+			continue;
 		case 'D':
 		case 'd':
 			switch (DeletePerson(Head)) {
@@ -96,7 +104,33 @@ int Menu(Position Head) {
 		case 'p':
 			PrintList(Head->next);
 			continue;
-
+		case 'I':
+		case 'i':
+			person = FindPerson(Head->next);
+			person ? InsertAfterPerson(person) : printf("Can't find that surname.\n");
+			continue;
+		case 'B':
+		case 'b':
+			previous = FindPrevious(Head);
+			previous ? InsertAfterPerson(previous) : printf("Can't find that surname.\n");
+			continue;
+		case 'S':
+		case 's':
+			switch (Sort(Head->next)) {
+			case SUCCESS:
+				printf("Sorted!\n");
+				PrintList(Head->next);
+				break;
+			case EMPTY_LIST:
+				printf("List is empty!\n");
+				break;
+			case SINGLE_PERSON_IN_LIST:
+				printf("No use: single person in list.\n");
+				break;
+			default:
+				break;
+			}
+			continue;
 		case 'X':
 		case 'x':
 			break;
@@ -106,6 +140,32 @@ int Menu(Position Head) {
 		}
 		break;
 	}
+
+	return SUCCESS;
+}
+
+Position FindPrevious(Position P) {
+	Position current = P;
+	char surname[MAXSIZE] = { 0 };
+
+	if (P->next == NULL) {
+		printf("Empty list!\n");
+		return NOT_FOUND;
+	}
+
+	strcpy(surname, enterSurname());
+
+	do {
+		if (strcmp(surname, current->next->prezime) == 0) {
+			return current;
+		}
+		else {
+			current = current->next;
+		}
+	} while (current->next != NULL);
+
+	return NOT_FOUND;
+
 }
 
 int InsertAfterPerson(Position P) {
@@ -152,6 +212,58 @@ int DeletePerson(Position P) {
 	return SUCCESS;
 }
 
+int swapItems(Position first, Position second) {
+	char tempName[MAXSIZE];
+	char tempSurname[MAXSIZE];
+	int tempBirthYear;
+
+	strcpy(tempName, first->ime);
+	strcpy(tempSurname, first->prezime);
+	tempBirthYear = first->godinaRodenja;
+
+	strcpy(first->ime, second->ime);
+	strcpy(first->prezime, second->prezime);
+	first->godinaRodenja = second->godinaRodenja;
+
+	strcpy(second->ime, tempName);
+	strcpy(second->prezime, tempSurname);
+	second->godinaRodenja = tempBirthYear;
+
+	return SUCCESS;
+}
+
+
+
+int Sort(Position firstItem) {
+	int swapped = 0;
+	Position lastPersonRead = NULL;
+	Position start = firstItem;
+
+	if (firstItem == NULL) {
+		printf("Empty List!\n");
+		return NO_PERSON_FOUND_INT;
+	}
+	else if (firstItem->next == NULL) {
+		printf("Only single element in list!\n");
+		return SINGLE_PERSON_IN_LIST;
+	}
+
+	do {
+		swapped = 0;
+		Position current = start;
+
+		while (current->next != lastPersonRead) {
+			if (strcmp(current->prezime, current->next->prezime) > 0) {
+				swapItems(current, current->next);
+				swapped = 1;
+			}
+		}
+		lastPersonRead = current;
+	} while (!swapped);
+
+	return SUCCESS;
+}
+
 char* enterSurname() {
 	char surname[MAXSIZE] = { 0 };
 	printf("Enter surname of the wanted person: \n");
@@ -160,7 +272,7 @@ char* enterSurname() {
 	return surname;
 }
 
-int FindPerson(Position firstItem) {
+Position FindPerson(Position firstItem) {
 	Position current = firstItem;
 	char surname[MAXSIZE] = { 0 };
 
