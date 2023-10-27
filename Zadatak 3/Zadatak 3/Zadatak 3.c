@@ -3,7 +3,7 @@
 	A. dinamièki dodaje novi element iza odreðenog elementa, - solved
 	B. dinamièki dodaje novi element ispred odreðenog elementa, - solved
 	C. sortira listu po prezimenima osoba, - solved
-	D. upisuje listu u datoteku,
+	D. upisuje listu u datoteku, - solved
 	E. èita listu iz datoteke.
 */
 
@@ -22,6 +22,7 @@
 #define NO_PERSON_FOUND_INT		-2
 #define SINGLE_PERSON_IN_LIST	-3
 #define ERROR_ALLOC				-4
+#define ERROR_FILE				-5
 
 
 // structures
@@ -50,6 +51,7 @@ Position FindPrevious(Position P);
 int DeletePerson(Position P);
 int swapItems(Position first, Position second);
 int Sort(Position firstItem);
+int SaveInTxt(Position firstItem);
 
 
 // main
@@ -70,7 +72,7 @@ int Menu(Position Head) {
 	Position previous = NULL;
 	while (1) {
 		printf("MENU:\n");
-		printf("Enter: A(dd to the front of the list)\n\tE(nd of the list add)\n\tI(nsert after person)\n\t(Insert) B(efore person)\n\tF(ind person)\n\tS(ort)\n\tD(elete)\n\tP(rint list)\n\t(e)X(it program)\n");
+		printf("Enter: A(dd to the front of the list)\n\tE(nd of the list add)\n\tI(nsert after person)\n\t(Insert) B(efore person)\n\tF(ind person)\n\tS(ort)\n\tU(Save data in file)\n\tD(elete)\n\tP(rint list)\n\t(e)X(it program)\n");
 		scanf(" %c", &choice);
 		switch (choice) {
 		case 'A':
@@ -131,6 +133,10 @@ int Menu(Position Head) {
 				break;
 			}
 			continue;
+		case 'U':
+		case 'u':
+			SaveInTxt(Head->next);
+			continue;
 		case 'X':
 		case 'x':
 			break;
@@ -140,6 +146,36 @@ int Menu(Position Head) {
 		}
 		break;
 	}
+
+	return SUCCESS;
+}
+
+int SaveInTxt(Position firstItem) {
+	Position current = firstItem;
+	FILE* filePointer = NULL;
+
+	filePointer = fopen("data.txt", "w");
+
+	if (filePointer == NULL) {
+		printf("Error in file opening.\n");
+		return ERROR_FILE;
+	}
+	else {
+		printf("File opened!\n");
+		fclose(filePointer);
+	}
+
+	if (current == NULL) {
+		printf("There is no person in list.\n");
+		return NO_PERSON_FOUND_INT;
+	}
+
+	filePointer = fopen("data.txt", "w");
+	while (current != NULL) {
+		fprintf(filePointer, "Name: %s\rSurname: %s\rBirth year: %d\n", current->ime, current->prezime, current->godinaRodenja);
+		current = current->next;
+	}
+	fclose(filePointer);
 
 	return SUCCESS;
 }
@@ -259,7 +295,7 @@ int Sort(Position firstItem) {
 			}
 		}
 		lastPersonRead = current;
-	} while (!swapped);
+	} while (swapped);
 
 	return SUCCESS;
 }
