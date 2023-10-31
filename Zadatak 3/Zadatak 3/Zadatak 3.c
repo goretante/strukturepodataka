@@ -118,7 +118,7 @@ int Menu(Position Head) {
 			continue;
 		case 'S':
 		case 's':
-			switch (Sort(Head->next)) {
+			switch (Sort(Head)) {
 			case SUCCESS:
 				printf("Sorted!\n");
 				PrintList(Head->next);
@@ -149,6 +149,8 @@ int Menu(Position Head) {
 
 	return SUCCESS;
 }
+
+
 
 int SaveInTxt(Position firstItem) {
 	Position current = firstItem;
@@ -270,32 +272,33 @@ int swapItems(Position first, Position second) {
 
 
 
-int Sort(Position firstItem) {
-	int swapped = 0;
-	Position lastPersonRead = NULL;
-	Position start = firstItem;
-
-	if (firstItem == NULL) {
+int Sort(Position head) {
+	Position j, j_prev, end;
+	
+	end = NULL;
+	if (head->next == NULL) {
 		printf("Empty List!\n");
 		return NO_PERSON_FOUND_INT;
 	}
-	else if (firstItem->next == NULL) {
+	else if (head->next->next == NULL) {
 		printf("Only single element in list!\n");
 		return SINGLE_PERSON_IN_LIST;
 	}
 
-	do {
-		swapped = 0;
-		Position current = start;
+	while (head->next != end) {
+		j_prev = head;
+		j = head->next;
 
-		while (current->next != lastPersonRead) {
-			if (strcmp(current->prezime, current->next->prezime) > 0) {
-				swapItems(current, current->next);
-				swapped = 1;
+		while (j->next != end) {
+			if (strcmp(j->prezime, j->next->prezime) > 0) {
+				swapItems(j, j->next);
 			}
+
+			j_prev = j;
+			j = j->next;
 		}
-		lastPersonRead = current;
-	} while (swapped);
+		end = j;
+	}
 
 	return SUCCESS;
 }
