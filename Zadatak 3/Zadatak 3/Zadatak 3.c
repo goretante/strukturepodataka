@@ -72,7 +72,7 @@ int Menu(Position Head) {
 	Position previous = NULL;
 	while (1) {
 		printf("MENU:\n");
-		printf("Enter: A(dd to the front of the list)\n\tE(nd of the list add)\n\tI(nsert after person)\n\t(Insert) B(efore person)\n\tF(ind person)\n\tS(ort)\n\tU(Save data in file)\n\tD(elete)\n\tP(rint list)\n\t(e)X(it program)\n");
+		printf("Enter: A(dd to the front of the list)\n\tE(nd of the list add)\n\tI(nsert after person)\n\t(Insert) B(efore person)\n\tF(ind person)\n\tS(ort)\n\tU(Save data in file)\n\tR(ead from file)\n\tD(elete)\n\tP(rint list)\n\t(e)X(it program)\n");
 		scanf(" %c", &choice);
 		switch (choice) {
 		case 'A':
