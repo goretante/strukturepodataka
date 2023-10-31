@@ -133,6 +133,18 @@ int Menu(Position Head) {
 				break;
 			}
 			continue;
+		case 'R':
+		case 'r':
+			switch (ReadFromTxt(Head)) {
+			case SUCCESS:
+				printf("File read successfully.\n");
+				break;
+			case ERROR_FILE:
+				break;
+			case ERROR_ALLOC:
+				break;
+			}
+			continue;
 		case 'U':
 		case 'u':
 			SaveInTxt(Head->next);
@@ -150,7 +162,56 @@ int Menu(Position Head) {
 	return SUCCESS;
 }
 
+int ReadFromTxt(Position Head) {
+	
+	FILE* filePointer = NULL;
 
+	filePointer = fopen("newData.txt", "r");
+
+	if (filePointer == NULL) {
+		printf("Error in file opening.\n");
+		return ERROR_FILE;
+	}
+	else {
+		printf("File opened!\n");
+		fclose(filePointer);
+	}
+
+	filePointer = fopen("newData.txt", "r");
+
+	while (!feof(filePointer)) {
+		
+		Position newPerson = NULL;
+		Position last = NULL;
+
+		char name[MAXSIZE] = { 0 };
+		char surname[MAXSIZE] = { 0 };
+		int birthYear = 0;
+
+		newPerson = (Position)malloc(sizeof(Osoba));
+
+		if (newPerson == NULL) {
+			printf("Allocation error.\n");
+			return ERROR_ALLOC;
+		}
+
+		fscanf(filePointer, "%s %s %d", name, surname, &birthYear);
+		strcpy(newPerson->ime, name);
+		strcpy(newPerson->prezime, surname);
+		newPerson->godinaRodenja = birthYear;
+
+		if (newPerson != NULL) {
+			last = FindLast(Head);
+			newPerson->next = last->next;
+			last->next = newPerson;
+		}
+
+	}
+
+	fclose(filePointer);
+
+	return SUCCESS;
+}
 
 int SaveInTxt(Position firstItem) {
 	Position current = firstItem;
