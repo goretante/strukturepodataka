@@ -1,10 +1,10 @@
 /*
 3. Prethodnom zadatku dodati funkcije:
-	A. dinamièki dodaje novi element iza odreðenog elementa, - solved
-	B. dinamièki dodaje novi element ispred odreðenog elementa, - solved
+	A. dinamiÃ¨ki dodaje novi element iza odreÃ°enog elementa, - solved
+	B. dinamiÃ¨ki dodaje novi element ispred odreÃ°enog elementa, - solved
 	C. sortira listu po prezimenima osoba, - solved
 	D. upisuje listu u datoteku, - solved
-	E. èita listu iz datoteke.
+	E. Ã¨ita listu iz datoteke.
 */
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -19,8 +19,8 @@
 #define SUCCESS					0
 #define NOT_FOUND				NULL
 #define EMPTY_LIST				-1
-#define NO_PERSON_FOUND_INT		-2
-#define SINGLE_PERSON_IN_LIST	-3
+#define NO_PERSON_FOUND_INT			-2
+#define SINGLE_PERSON_IN_LIST			-3
 #define ERROR_ALLOC				-4
 #define ERROR_FILE				-5
 
