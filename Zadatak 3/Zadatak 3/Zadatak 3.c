@@ -174,10 +174,7 @@ int ReadFromTxt(Position Head) {
 	}
 	else {
 		printf("File opened!\n");
-		fclose(filePointer);
 	}
-
-	filePointer = fopen("newData.txt", "r");
 
 	while (!feof(filePointer)) {
 		
@@ -225,7 +222,6 @@ int SaveInTxt(Position firstItem) {
 	}
 	else {
 		printf("File opened!\n");
-		fclose(filePointer);
 	}
 
 	if (current == NULL) {
@@ -233,7 +229,6 @@ int SaveInTxt(Position firstItem) {
 		return NO_PERSON_FOUND_INT;
 	}
 
-	filePointer = fopen("data.txt", "w");
 	while (current != NULL) {
 		fprintf(filePointer, "Name: %s\rSurname: %s\rBirth year: %d\n", current->ime, current->prezime, current->godinaRodenja);
 		current = current->next;
@@ -438,7 +433,7 @@ int PrintList(Position firstItem) {
 
 int AddOnBeginning(Position P) {
 
-	Position newPerson;
+	Position newPerson = NULL;
 
 	newPerson = CreatePerson();
 
