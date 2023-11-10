@@ -1,0 +1,8 @@
+﻿  Zadatak 5.c
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 5\Zadatak 5\Zadatak 5.c(88,42): warning C4047: 'function': 'char *' differs in levels of indirection from 'char'
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 5\Zadatak 5\Zadatak 5.c(88,42): warning C4024: 'popAndPerformOperation': different types for formal and actual parameter 2
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 5\Zadatak 5\Zadatak 5.c(104,3): warning C4013: 'push' undefined; assuming extern returning int
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 5\Zadatak 5\Zadatak 5.c(115,11): warning C4013: 'pop' undefined; assuming extern returning int
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 5\Zadatak 5\Zadatak 5.c(150,2): warning C4013: 'printStack' undefined; assuming extern returning int
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 5\Zadatak 5\Zadatak 5.c(185,48): warning C4028: formal parameter 2 different from declaration
+  Zadatak 5.vcxproj -> C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 5\x64\Debug\Zadatak 5.exe
