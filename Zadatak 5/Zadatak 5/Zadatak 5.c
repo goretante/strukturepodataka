@@ -34,7 +34,7 @@ int main()
 	if (result == OPERATION_ERROR) {
 		return OPERATION_ERROR;
 	}
-	printf("%d", result);
+	printf("%d\n", result);
 	free(head);
 	return EXIT_SUCCESS;
 }
