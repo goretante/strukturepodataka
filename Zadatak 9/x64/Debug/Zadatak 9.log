@@ -1,0 +1,5 @@
+﻿  Zadatak 9.c
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 9\Zadatak 9.c(41,8): warning C4244: 'function': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 9\Zadatak 9.c(99,3): warning C4033: 'levelOrder' must return a value
+C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 9\Zadatak 9.c(118): warning C4715: 'levelOrder': not all control paths return a value
+  Zadatak 9.vcxproj -> C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 9\x64\Debug\Zadatak 9.exe
