@@ -18,11 +18,13 @@ int inOrder(Position root);
 int preOrder(Position root);
 int postOrder(Position root);
 int levelOrder(Position root);
+Position find(Position root, int value);
+Position delete(Position root, int value);
 
 int main() {
 
 	Position root = NULL;
-
+	
 	root = insert(root, 8);
 	insert(root, 3);
 	insert(root, 2);
@@ -39,6 +41,18 @@ int main() {
 	printf("\nlevel order: ");
 	levelOrder(root);
 	printf("\n");
+
+	int findVal;
+	printf("Find number: ");
+	scanf("%d", &findVal);
+	Position result = find(root, findVal);
+	if (result) printf("Element %d is on address %p\n", findVal, result);
+	else printf("Can't find the element.\n");
+
+	int deleteVal;
+	printf("Delete number: ");
+	scanf("%d", &deleteVal);
+	delete(root, deleteVal);
 
 	return EXIT_SUCCESS;
 }
@@ -120,4 +134,67 @@ Position createNode(int value) {
 	newNode->left = NULL;
 	newNode->right = NULL;
 	return newNode;
+}
+
+Position find(Position root, int value) {
+
+	if (root == NULL) {
+		return NULL;
+	}
+
+	else if (value < root->value) {
+		return find(root->left, value);
+	}
+
+	else if (value > root->value) {
+		return find(root->right, value);
+	}
+
+	return root;
+
+}
+
+Position delete(Position root, int value) {
+	Position temp = NULL;
+
+	if (!root) {
+		printf("Element kojeg zelite obrisati nije u stablu.\n");
+	}
+
+	else if (value < root->value)
+		root->left = delete(root->left, value);
+
+	else if (value > root->value)
+		root->right = delete(root->right, value);
+
+
+	else if (root->left != NULL && root->right != NULL) {
+
+		temp = root->right;
+
+		while (temp->left != NULL)
+			temp = temp->left;
+
+		root->value = temp->value;
+
+		root->right = delete(root->right, temp->value);
+
+	}
+
+	else {
+
+		temp = root;
+
+		if (root->left != NULL)
+			root = root->left;
+
+		else
+			root = root->right;
+
+		free(temp);
+
+	}
+
+	return root;
+
 }
