@@ -1,3 +1,11 @@
+﻿/*
+1. Napisati program koji prvo pročita koliko redaka ima datoteka, tj.koliko ima studenata
+zapisanih u datoteci.Nakon toga potrebno je dinamički alocirati prostor za niz struktura
+studenata(ime, prezime, bodovi) i učitati iz datoteke sve zapise.Na ekran ispisati ime,
+prezime, apsolutni i relativni broj bodova.
+Napomena: Svaki redak datoteke sadrži ime i prezime studenta, te broj bodova na kolokviju.
+*/
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
@@ -5,112 +13,88 @@
 #include <string.h>
 
 #define MAXNAME 128
-#define MAXRED 1024
-#define MAXBOD 50
+#define MAXSIZE 1024
+#define MAXPOINTS 15
 
 typedef struct {
-    char ime[MAXNAME];
-    char prezime[MAXNAME];
-    int bodovi;
-}Student;
+    char name[MAXNAME];
+    char surname[MAXNAME];
+    double points;
+} Student;
 
-int brojacRedova(char imeDatoteke[MAXNAME]) {
-    int brojac = 0;
-    FILE* fp = NULL;
-
-    fp = fopen(imeDatoteke, "r");
-    if (fp == NULL) {
-        printf("\nGreska u otvaranju datoteke!");
-    }
-    else {
-        printf("\nUspjesno otvaranje datoteke!");
-    }
-
-    char buffer[MAXRED] = { 0 };
-
-    while (!feof(fp)) {
-        fgets(buffer, MAXRED, fp);
-        if (strcmp("\n", buffer) != 0) {
-            brojac++;
-        }
-    }
-
-    fclose(fp);
-    return brojac;
-}
-
-void citanjeStud(Student* stud, int brStud, char imeDatoteke[MAXNAME]) {
-    FILE* fp = NULL;
-    int i = 0;
-
-    fp = fopen(imeDatoteke, "r");
-
-    if (fp == NULL) {
-        printf("\nGreska u otvaranju datoteke!");
-    }
-    else {
-        printf("\nUspjesno otvaranje datoteke!");
-    }
-
-    for (i = 0; i < brStud; i++) {
-        fscanf(fp, "%s %s %d\n", (stud + i)->ime, (stud + i)->prezime, &((stud + i)->bodovi));
-    }
-
-    fclose(fp);
-    return;
-}
-
-void ispisStud(Student* stud, int brStud) {
-    double prosjek = 0;
-    int i = 0;
-
-    for (i = 0; i < brStud; i++) {
-        prosjek = (double)(stud + i)->bodovi / MAXBOD;
-        printf("\nStudent %s %s imao je %d bodova, odnosno %.2lf posto (relativni bodovi).", (stud + i)->ime, (stud + i)->prezime, (stud + i)->bodovi, prosjek * 100);
-    }
-}
+int readNumberOfRows();
+Student* readAndSaveStudents(int numStudents);
+int printStudents(Student* students, int numOfStudents);
 
 int main() {
+    int numRows = 0;
+    Student* students = NULL;
 
-    char imeDatoteke[MAXNAME] = { 0 };
+    numRows = readNumberOfRows();
+    if (numRows > 0) {
+        students = readAndSaveStudents(numRows);
+        printStudents(students, numRows);
 
-    FILE* test = NULL;
-
-    while (test == NULL) {
-        printf("\nMolimo upi�ite ime datoteke sa listom studenata:\n");
-        scanf("%s", imeDatoteke);
-
-        test = fopen(imeDatoteke, "r");
-
-        if (test == NULL) {
-            printf("\nGreska u otvaranju datoteke!");
-        }
-        else {
-            printf("\nUspjesno otvaranje datoteke!");
-            fclose(test);  // zatvori otvorenu datoteku
-        }
-
-        getchar();
+        free(students);
     }
 
-    int brojStudenata = 0;
-    brojStudenata = brojacRedova(imeDatoteke);
+    return EXIT_SUCCESS;
+}
 
-    Student* stud = NULL;
-    stud = (Student*)malloc(brojStudenata * sizeof(Student));
+int readNumberOfRows() {
+    int counter = 0;
+    FILE* filePointer = NULL;
+    char buffer[MAXNAME] = { 0 };
 
-    if (stud == NULL) {
-        printf("Alokacija neuspjesna.\n");
+    filePointer = fopen("students.txt", "r");
+    if (filePointer == NULL) {
+        printf("\nCan't open file!");
+        return -1;
     }
-    else {
-        printf("Alokacija je uspjesna.\n");
+
+
+    while (!feof(filePointer)) {
+        fgets(buffer, MAXNAME, filePointer);
+        counter++;
     }
 
-    citanjeStud(stud, brojStudenata, imeDatoteke);
+    fclose(filePointer);
+    return counter;
+}
 
-    ispisStud(stud, brojStudenata);
+Student* readAndSaveStudents(int numStudents) {
 
-    free(stud);
+    Student* students = NULL;
+    int counter = 0;
+    FILE* filePointer = NULL;
 
-    return 0;
+    students = (Student*)malloc(numStudents * sizeof(Student));
+    if (!students) {
+        printf("Can't allocate memory!\n");
+        return NULL;
+    }
+
+    filePointer = fopen("students.txt", "r");
+    if (!filePointer) {
+        printf("Can't open file!\n");
+        return NULL;
+    }
+
+    while (!feof(filePointer)) {
+        fscanf(filePointer, " %s %s %lf", students[counter].name, students[counter].surname, &students[counter].points);
+        counter++;
+    }
+
+    fclose(filePointer);
+
+    return students;
+}
+
+int printStudents(Student* students, int numOfStudents) {
+    for (int counter = 0; counter < numOfStudents; counter++) {
+        double relativePoints = students[counter].points / MAXPOINTS * 100;
+        printf("Name: %s %s - Abs. points: %.1lf - Rel. points: %.2lf\n", students[counter].name, students[counter].surname, students[counter].points, relativePoints);
+    }
+    
+    return EXIT_SUCCESS;
 }
