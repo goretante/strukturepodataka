@@ -1,176 +1,134 @@
 #define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+typedef struct Node {
+    double data;
+    struct Node* next;
+} Node;
 
-#define MAX_LENGHT 1024
-#define ALLOC_ERROR NULL
-#define FILE_ERROR -1
-#define OPERATION_ERROR -2
+int initializeStack(Node** stack);
+int push(Node** stack, double value);
+int pop(Node** stack, double* result);
+double evaluatePostfix(FILE* filePointer);
 
-struct _stack;
-typedef struct _stack* Position;
-typedef struct _stack {
-	int Element;
-	Position Next;
-}stack;
+int main() {
+    FILE* file = fopen("postfix.txt", "r");
+    if (file == NULL) {
+        printf("Nemoguæe otvoriti datoteku\n");
+        return EXIT_FAILURE;
+    }
+    double result = evaluatePostfix(file);
 
-Position initialization(Position head);
-int readFromFile(char* buffer);
-int calculate(Position head);
-int logic(Position head, char* buffer);
-int push(Position head, int numberToPush);
-int pop(Position head);
-int operation(Position head, char operation);
-int delete(Position head);
+    printf("Rezultat postfiksnog izraza: %.2lf\n", result);
 
-int main()
-{
-	Position head = NULL;
-	int result;
-	head = initialization(head);
-	result = calculate(head);
-	if (result == OPERATION_ERROR) {
-		return OPERATION_ERROR;
-	}
-	printf("%d\n", result);
-	free(head);
-	return EXIT_SUCCESS;
+    fclose(file);
+
+    return EXIT_SUCCESS;
 }
 
-int calculate(Position head) {
-	int result = 0;
-	int status = 0;
-	char buffer[MAX_LENGHT] = { 0 };
-	readFromFile(buffer);
-	status = logic(head, buffer);
-	if (status == OPERATION_ERROR) {
-		return OPERATION_ERROR;
-	}
-	result = head->Next->Element;
-	head->Next = head->Next->Next;
-	delete(head);
-	return result;
+int initializeStack(Node** stack) {
+    *stack = NULL;
+    return 1;
 }
 
-int logic(Position head, char* buffer) {
-	char* currentBuffer = buffer;
-	int number = 0;
-	int status = 0;
-	int operationChar = '\0';
-	int numBytes = 0;
+int push(Node** stack, double value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (!newNode) {
+        printf("Error allocating memory!\n");
+        return 0;
+    }
 
-	while (strlen(currentBuffer) > 0) {
-		if (sscanf(currentBuffer, " %d %n", &number, &numBytes) == 1) {
-			push(head, number);
-		}
-		else {
-			sscanf(currentBuffer, " %c %n", &operationChar, &numBytes);
-			status = operation(head, operationChar);
-			if (status == OPERATION_ERROR) {
-				return OPERATION_ERROR;
-			}
-		}
+    newNode->data = value;
+    newNode->next = *stack;
+    *stack = newNode;
 
-		currentBuffer += numBytes;
-	}
-
-	return EXIT_SUCCESS;
+    return 1;
 }
 
-int operation(Position head, char operation) {
+int pop(Node** stack, double* result) {
+    if (!*stack) {
+        printf("Stack is empty!\n");
+        return 0;
+    }
 
-	int num1 = 0;
-	int num2 = 0;
+    Node* top = *stack;
+    *result = top->data;
+    *stack = top->next;
+    free(top);
 
-	num1 = pop(head);
-	num2 = pop(head);
-
-	switch (operation)
-	{
-	case '+':
-		num1 = num2 + num1;
-		push(head, num1);
-		break;
-	case '-':
-		num1 = num2 - num1;
-		push(head, num1);
-		break;
-	case '*':
-		num1 = num2 * num1;
-		push(head, num1);
-		break;
-	case '/':
-		num1 = num2 / num1;
-		push(head, num1);
-		break;
-	default:
-		printf("Wrong operation!\n");
-		delete(head);
-		return OPERATION_ERROR;
-	}
+    return 1;
 }
 
-int delete(Position head) {
-	
-	Position toDelete = NULL;
+double evaluatePostfix(FILE* filePointer) {
+    Node* stack;
+    if (!initializeStack(&stack)) {
+        printf("Stack initialization error!\n");
+        return EXIT_FAILURE;
+    }
 
-	while (head->Next != NULL) {
-		toDelete = head->Next;
-		head->Next = toDelete->Next;
-		free(toDelete);
-	}
+    char token[20];
+    while (fscanf(filePointer, "%s", token) != EOF) {
+        if (token[0] >= '0' && token[0] <= '9') {
+            double value = atof(token);
+            if (!push(&stack, value)) {
+                printf("Adding stack element error.\n");
+                return EXIT_FAILURE;
+            }
+        }
+        else {
+            double operand2, operand1;
+            if (!pop(&stack, &operand2) || !pop(&stack, &operand1)) {
+                printf("Removing stack element error.\n");
+                return EXIT_FAILURE;
+            }
 
-	return EXIT_SUCCESS;
-}
+            switch (token[0]) {
+            case '+':
+                if (!push(&stack, operand1 + operand2)) {
+                    printf("Error adding result back on stack.\n");
+                    return EXIT_FAILURE;
+                }
+                break;
+            case '-':
+                if (!push(&stack, operand1 - operand2)) {
+                    printf("Error adding result back on stack.\n");
+                    return EXIT_FAILURE;
+                }
+                break;
+            case '*':
+                if (!push(&stack, operand1 * operand2)) {
+                    printf("Error adding result back on stack.\n");
+                    return EXIT_FAILURE;
+                }
+                break;
+            case '/':
+                if (operand2 == 0) {
+                    printf("Division by zero isn't allowed!\n");
+                    return EXIT_FAILURE;
+                }
+                if (!push(&stack, operand1 / operand2)) {
+                    printf("Error adding result back on stack.\n");
+                    return EXIT_FAILURE;
+                }
+                break;
+            default:
+                printf("Unknown operator: %s\n", token);
+                return EXIT_FAILURE;
+            }
+        }
+    }
 
-int pop(Position head) {
+    double result;
+    if (!pop(&stack, &result)) {
+        printf("Invalid postfix term.\n");
+        return EXIT_FAILURE;
+    }
 
-	Position toDelete = head->Next;
-	int numberToPop = toDelete->Element;
-	head->Next = toDelete->Next;
+    if (stack != NULL) {
+        printf("Invalid postfix term.\n");
+        return EXIT_FAILURE;
+    }
 
-	free(toDelete);
-
-	return numberToPop;
-}
-
-int push(Position head, int numberToPush) {
-	Position newStackElement = NULL;
-	newStackElement = initialization(head);
-
-	newStackElement->Element = numberToPush;
-	newStackElement->Next = head->Next;
-	head->Next = newStackElement;
-
-	return EXIT_SUCCESS;
-}
-
-int readFromFile(char* buffer) {
-	FILE* filePointer = NULL;
-	filePointer = fopen("postfix.txt", "r");
-	
-	if (!filePointer) {
-		printf("Can't read file!\n");
-		return FILE_ERROR;
-	}
-
-	fgets(buffer, MAX_LENGHT, filePointer);
-	fclose(filePointer);
-
-	return EXIT_SUCCESS;
-}
-
-Position initialization(Position head) {
-	Position newElement = NULL;
-	newElement = (Position)malloc(sizeof(stack));
-	if (!newElement) {
-		printf("Can't allocate memory!\n");
-		return ALLOC_ERROR;
-	}
-	newElement->Element = 0;
-	newElement->Next = NULL;
-
-	return newElement;
+    return result;
 }
