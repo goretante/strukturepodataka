@@ -15,12 +15,12 @@ double evaluatePostfix(FILE* filePointer);
 int main() {
     FILE* file = fopen("postfix.txt", "r");
     if (file == NULL) {
-        printf("Nemoguæe otvoriti datoteku\n");
+        printf("File opening error!\n");
         return EXIT_FAILURE;
     }
     double result = evaluatePostfix(file);
 
-    printf("Rezultat postfiksnog izraza: %.2lf\n", result);
+    printf("Rezultat of postfix term: %.2lf\n", result);
 
     fclose(file);
 
