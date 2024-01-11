@@ -132,14 +132,6 @@ int DeletePerson(Position P) {
 	return SUCCESS;
 }
 
-char* enterSurname() {
-	char surname[MAXSIZE] = { 0 };
-	printf("Enter surname of the wanted person: \n");
-	scanf(" %s", surname);
-
-	return surname;
-}
-
 int FindPerson(Position firstItem){
 	Position current = firstItem;
 	char surname[MAXSIZE] = { 0 };
@@ -149,7 +141,8 @@ int FindPerson(Position firstItem){
 		return NOT_FOUND;
 	}
 
-	strcpy(surname, enterSurname());
+	printf("Enter surname of the wanted person: \n");
+	scanf(" %s", surname);
 
 	do {
 		if (strcmp(current->prezime, surname) == 0) {
