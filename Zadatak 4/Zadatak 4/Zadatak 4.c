@@ -25,7 +25,7 @@ int main() {
 	Node* poly1 = NULL;
 	Node* poly2 = NULL;
 
-	// Èitanje polinoma iz datoteke
+	// Ãˆitanje polinoma iz datoteke
 	readPolynomialFromFile("polynomes.txt", &poly1, &poly2);
 
 	// Ispisivanje sortiranih polinoma
@@ -40,13 +40,13 @@ int main() {
 	printPolynomial(sumResult);
 	freeList(sumResult);
 
-	// Množenje polinoma
+	// MnoÅ¾enje polinoma
 	Node* multiplyResult = multiplyPolynomials(poly1, poly2);
 	printf("Product: ");
 	printPolynomial(multiplyResult);
 	freeList(multiplyResult);
 
-	// Oslobaðanje memorije
+	// OslobaÃ°anje memorije
 	freeList(poly1);
 	freeList(poly2);
 
@@ -103,7 +103,7 @@ int printPolynomial(Node* poly) {
 
 int readPolynomialFromFile(const char* fileName, Node** poly1, Node** poly2) {
     FILE* filePointer = NULL;
-    char line[100];  // Prijedlog: prilagodite velièinu prema potrebi
+    char line[100];
 
     filePointer = fopen(fileName, "r");
     if (filePointer == NULL) {
