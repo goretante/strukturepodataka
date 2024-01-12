@@ -3,14 +3,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 struct _node;
 typedef struct _node* Position;
 typedef struct _node {
-	int value;
-	Position left;
-	Position right;
+    int value;
+    Position left;
+    Position right;
 } Node;
+
+struct _queueNode;
+typedef struct _queueNode* QueueNode;
+typedef struct _queueNode {
+    Position treeNode;
+    QueueNode next;
+} QueueNodeStruct;
+
+typedef struct {
+    QueueNode front;
+    QueueNode rear;
+} Queue;
 
 Position insert(Position root, int value);
 Position createNode(int value);
@@ -20,181 +31,244 @@ int postOrder(Position root);
 int levelOrder(Position root);
 Position find(Position root, int value);
 Position delete(Position root, int value);
+Queue* createQueue();
+void enqueue(Queue* queue, Position treeNode);
+QueueNode dequeueNode(Queue* queue);
+int isQueueEmpty(Queue* queue);
 
 int main() {
 
-	Position root = NULL;
-	
-	root = insert(root, 8);
-	insert(root, 3);
-	insert(root, 2);
-	insert(root, 1);
-	insert(root, 9);
-	insert(root, 7);
+    Position root = NULL;
+    int choice, value;
 
-	printf("in order: ");
-	inOrder(root);
-	printf("\npre order: ");
-	preOrder(root);
-	printf("\npost order: ");
-	postOrder(root);
-	printf("\nlevel order: ");
-	levelOrder(root);
-	printf("\n");
+    do {
+        printf("\n1. Add element\n");
+        printf("2. Print inorder\n");
+        printf("3. Print preorder\n");
+        printf("4. Print postorder\n");
+        printf("5. Print levelorder\n");
+        printf("6. Find element\n");
+        printf("7. Delete element\n");
+        printf("8. Exit\n");
 
-	int findVal;
-	printf("Find number: ");
-	scanf("%d", &findVal);
-	Position result = find(root, findVal);
-	if (result) printf("Element %d is on address %p\n", findVal, result);
-	else printf("Can't find the element.\n");
+        printf("\nChoose option: ");
+        scanf("%d", &choice);
 
-	int deleteVal;
-	printf("Delete number: ");
-	scanf("%d", &deleteVal);
-	delete(root, deleteVal);
+        switch (choice) {
+        case 1:
+            printf("Enter value: ");
+            scanf("%d", &value);
+            root = insert(root, value);
+            break;
+        case 2:
+            printf("Inorder: ");
+            inOrder(root);
+            break;
+        case 3:
+            printf("Preorder: ");
+            preOrder(root);
+            break;
+        case 4:
+            printf("Postorder: ");
+            postOrder(root);
+            break;
+        case 5:
+            printf("Levelorder: ");
+            levelOrder(root);
+            break;
+        case 6:
+            printf("Enter value you want to find: ");
+            scanf("%d", &value);
+            Position result = find(root, value);
+            if (result)
+                printf("Element %d is on address %p\n", value, result);
+            else
+                printf("Can't find the element.\n");
+            break;
+        case 7:
+            printf("Enter value you want to delete: ");
+            scanf("%d", &value);
+            root = delete(root, value);
+            break;
+        case 8:
+            printf("Program exit.\n");
+            break;
+        default:
+            printf("Invalid choice, try again.\n");
+        }
+    } while (choice != 8);
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 int inOrder(Position root) {
-	if (root != NULL) {
+    if (root != NULL) {
 
-		inOrder(root->left);
-		printf("%d ", root->value);
-		inOrder(root->right);
-	}
-	return EXIT_SUCCESS;
+        inOrder(root->left);
+        printf("%d ", root->value);
+        inOrder(root->right);
+    }
+    return EXIT_SUCCESS;
 }
 
 int preOrder(Position root) {
-	if (root != NULL) {
-		printf("%d ", root->value);
-		preOrder(root->left);
-		preOrder(root->right);
-	}
+    if (root != NULL) {
+        printf("%d ", root->value);
+        preOrder(root->left);
+        preOrder(root->right);
+    }
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 int postOrder(Position root) {
-	if (root != NULL) {
-		postOrder(root->left);
-		postOrder(root->right);
-		printf("%d ", root->value);
-	}
+    if (root != NULL) {
+        postOrder(root->left);
+        postOrder(root->right);
+        printf("%d ", root->value);
+    }
+    return EXIT_SUCCESS;
 }
 
 int levelOrder(Position root) {
-	if (root == NULL)
-		return;
+    if (root == NULL)
+        return EXIT_SUCCESS;
 
-	Position stack[100] = { 0 };
-	int first = 0;
-	int last = 0;
+    Queue* queue = createQueue();
+    enqueue(queue, root);
 
-	stack[last++] = root;
+    while (!isQueueEmpty(queue)) {
+        Position current = dequeueNode(queue)->treeNode;
 
-	while (first < last) {
-		Position current = stack[first++];
+        printf("%d ", current->value);
 
-		printf("%d ", current->value);
+        if (current->left != NULL)
+            enqueue(queue, current->left);
+        if (current->right != NULL)
+            enqueue(queue, current->right);
+    }
 
-		if (current->left != NULL)
-			stack[last++] = current->left;
-		if (current->right != NULL)
-			stack[last++] = current->right;
-	}
-
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 Position insert(Position root, int value) {
-	if (root == NULL) {
-		return createNode(value);
-	}
-	if (value < root->value) {
-		root->left = insert(root->left, value);
-	} else if (value >= root->value) {
-		root->right = insert(root->right, value);
-	}
+    if (root == NULL) {
+        return createNode(value);
+    }
+    if (value < root->value) {
+        root->left = insert(root->left, value);
+    }
+    else if (value > root->value) {
+        root->right = insert(root->right, value);
+    }
 
-	return root;
+    return root;
 }
 
 Position createNode(int value) {
 
-	Position newNode = NULL;
-	newNode = (Position)malloc(sizeof(Node));
-	if (!newNode) {
-		printf("Memory can't be allocated.\n");
-		return NULL;
-	}
-	newNode->value = value;
-	newNode->left = NULL;
-	newNode->right = NULL;
-	return newNode;
+    Position newNode = NULL;
+    newNode = (Position)malloc(sizeof(Node));
+    if (!newNode) {
+        fprintf(stderr, "Can't allocate memory.\n");
+        exit(EXIT_FAILURE);
+    }
+    newNode->value = value;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
 }
 
 Position find(Position root, int value) {
 
-	if (root == NULL) {
-		return NULL;
-	}
+    if (root == NULL) {
+        return NULL;
+    }
+    else if (value < root->value) {
+        return find(root->left, value);
+    }
+    else if (value > root->value) {
+        return find(root->right, value);
+    }
 
-	else if (value < root->value) {
-		return find(root->left, value);
-	}
-
-	else if (value > root->value) {
-		return find(root->right, value);
-	}
-
-	return root;
-
+    return root;
 }
 
 Position delete(Position root, int value) {
-	Position temp = NULL;
+    Position successor = NULL;
 
-	if (!root) {
-		printf("Element kojeg zelite obrisati nije u stablu.\n");
-	}
+    if (!root) {
+        printf("Element you want to delete is not in the tree.\n");
+    }
+    else if (value < root->value)
+        root->left = delete(root->left, value);
+    else if (value > root->value)
+        root->right = delete(root->right, value);
+    else if (root->left != NULL && root->right != NULL) {
+        successor = root->right;
+        while (successor->left != NULL)
+            successor = successor->left;
+        root->value = successor->value;
+        root->right = delete(root->right, successor->value);
+    }
+    else {
+        successor = root;
+        if (root->left != NULL)
+            root = root->left;
+        else
+            root = root->right;
+        free(successor);
+    }
 
-	else if (value < root->value)
-		root->left = delete(root->left, value);
+    return root;
+}
 
-	else if (value > root->value)
-		root->right = delete(root->right, value);
+Queue* createQueue() {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    if (!queue) {
+        fprintf(stderr, "Can't allocate memory.\n");
+        exit(EXIT_FAILURE);
+    }
+    queue->front = NULL;
+    queue->rear = NULL;
+    return queue;
+}
 
+void enqueue(Queue* queue, Position treeNode) {
+    QueueNode newQueueNode = (QueueNode)malloc(sizeof(QueueNodeStruct));
+    if (!newQueueNode) {
+        fprintf(stderr, "Can't allocate memory.\n");
+        exit(EXIT_FAILURE);
+    }
+    newQueueNode->treeNode = treeNode;
+    newQueueNode->next = NULL;
 
-	else if (root->left != NULL && root->right != NULL) {
+    if (queue->rear == NULL) {
+        queue->front = newQueueNode;
+        queue->rear = newQueueNode;
+    }
+    else {
+        queue->rear->next = newQueueNode;
+        queue->rear = newQueueNode;
+    }
+}
 
-		temp = root->right;
+QueueNode dequeueNode(Queue* queue) {
+    if (isQueueEmpty(queue)) {
+        fprintf(stderr, "Queue is empty.\n");
+        exit(EXIT_FAILURE);
+    }
 
-		while (temp->left != NULL)
-			temp = temp->left;
+    QueueNode frontNode = queue->front;
+    queue->front = frontNode->next;
 
-		root->value = temp->value;
+    if (queue->front == NULL) {
+        queue->rear = NULL;
+    }
 
-		root->right = delete(root->right, temp->value);
+    return frontNode;
+}
 
-	}
-
-	else {
-
-		temp = root;
-
-		if (root->left != NULL)
-			root = root->left;
-
-		else
-			root = root->right;
-
-		free(temp);
-
-	}
-
-	return root;
-
+int isQueueEmpty(Queue* queue) {
+    return (queue->front == NULL);
 }
