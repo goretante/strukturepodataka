@@ -1,4 +1,9 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+﻿// napomena: u c) dijelu zadatka nisam bio siguran treba li ispisivati u datoteku i binarna stabla 
+// iz a) i b) dijela zadataka ili samo random brojeve koji se upisuju u rootRand, stoga sam ispisao u file
+// inorder zapise iz a), b) i c) dijela zadatka 
+
+
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -15,13 +20,14 @@ typedef struct _node {
 Position createNode(int value);
 Position insert(Position root, int value);
 void inorderToFile(Position root, FILE* filePointer);
-void inorderToConsole(Position root);
+void inorderToConsole(Position root); // function for testing
 int replace(Position root);
 int getRandomValue();
 
 int main() {
     Position root = NULL;
     Position rootRand = NULL;
+    FILE* filePointer = fopen("inorder.txt", "w");
     srand(time(0));
 
     root = insert(root, 2);
@@ -35,18 +41,20 @@ int main() {
     insert(root, 3);
     insert(root, 7);
 
-    inorderToConsole(root);
-    printf("\n");
+    fprintf(filePointer, "a) binary tree: ");
+    inorderToFile(root, filePointer);
+    fprintf(filePointer, "\n");
 
     replace(root);
-    inorderToConsole(root);
-    printf("\n");
+    fprintf(filePointer, "b) binary tree: ");
+    inorderToFile(root, filePointer);
+    fprintf(filePointer, "\n");
 
     rootRand = insert(rootRand, getRandomValue());
     for (int i = 0; i < 10; i++) {
         insert(rootRand, getRandomValue());
     }
-    FILE* filePointer = fopen("inorder.txt", "w");
+    fprintf(filePointer, "c) binary tree: ");
     inorderToFile(rootRand, filePointer);
 
     fclose(filePointer);
