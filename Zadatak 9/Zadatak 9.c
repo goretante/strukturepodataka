@@ -48,7 +48,6 @@ int main() {
     }
     FILE* filePointer = fopen("inorder.txt", "w");
     inorderToFile(rootRand, filePointer);
-    replace(rootRand);
 
     fclose(filePointer);
     return 0;
