@@ -23,7 +23,33 @@ typedef struct User {
 	struct User* next;
 } User;
 
+int printBooks(Book* bookList);
+
 int main() {
 
 	return EXIT_SUCCESS;
+}
+
+int printBooks(Book* bookList) {
+	Book* currentBook = bookList;
+
+	while (currentBook != NULL) {
+		printf("Title: %s\nAuthor: %s\nYear: %d\nAvailable copies: %d\n", currentBook->title, currentBook->author, currentBook->year, currentBook->availableCopies);
+
+		if (currentBook->borrowedBy != NULL) {
+			printf("Borrowed by:\n");
+
+			User* currentUser = currentBook->borrowedBy;
+			while (currentUser != NULL) {
+				printf(" - %s\n", currentUser->name);
+			}
+		}
+		else {
+			printf("Not borrowed by any user!\n");
+		}
+
+		printf("----------------------------\n");
+
+		currentBook = currentBook->next;
+	}
 }
