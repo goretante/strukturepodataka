@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+// structures
 struct Book;
 struct User;
 
@@ -23,18 +25,24 @@ typedef struct User {
 	struct User* next;
 } User;
 
+// function prototypes
 int printBooks(Book* bookList);
+int printUsers(User* userList);
 
+// main
 int main() {
 
 	return EXIT_SUCCESS;
 }
 
+
+// functions
 int printBooks(Book* bookList) {
 	Book* currentBook = bookList;
 
 	while (currentBook != NULL) {
-		printf("Title: %s\nAuthor: %s\nYear: %d\nAvailable copies: %d\n", currentBook->title, currentBook->author, currentBook->year, currentBook->availableCopies);
+		printf("Title: %s\nAuthor: %s\nYear: %d\nAvailable copies: %d\n",
+			currentBook->title, currentBook->author, currentBook->year, currentBook->availableCopies);
 
 		if (currentBook->borrowedBy != NULL) {
 			printf("Borrowed by:\n");
@@ -42,6 +50,7 @@ int printBooks(Book* bookList) {
 			User* currentUser = currentBook->borrowedBy;
 			while (currentUser != NULL) {
 				printf(" - %s\n", currentUser->name);
+				currentUser = currentUser->next;
 			}
 		}
 		else {
@@ -52,4 +61,32 @@ int printBooks(Book* bookList) {
 
 		currentBook = currentBook->next;
 	}
+
+	return EXIT_SUCCESS;
+}
+
+int printUsers(User* userList) {
+	User* currentUser = userList;
+
+	while (currentUser != NULL) {
+		printf("User: %s\nBorrowed Books: %d\n",
+			currentUser->name, currentUser->borrowedBooks);
+
+		if (currentUser->borrowedBooks > 0) {
+			printf("Borrowed Books:\n");
+
+			for (int i = 0; i < currentUser->borrowedBooks; i++) {
+				printf("- %s\n", currentUser->borrowedList[i].title);
+			}
+		}
+		else {
+			printf("No books borrowed.\n");
+		}
+
+		printf("----------------------------\n");
+
+		currentUser = currentUser->next;
+	}
+
+	return EXIT_SUCCESS;
 }
