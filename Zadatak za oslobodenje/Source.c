@@ -416,7 +416,6 @@ void returnBook(User* user, Book* book) {
     }
 }
 
-// Funkcija za vraćanje knjige, koja uzima unos korisnika i knjige od korisnika
 void returnBookFromUserInput(User* userHead, Book* bookHead) {
     printf("Enter your name: ");
     char userName[50];
@@ -464,7 +463,6 @@ void saveStateToFile(Book* bookHead, User* userHead) {
 
     fclose(booksFile);
 
-    // Spremi korisnike
     FILE* usersFile = fopen("users.txt", "w");
     if (usersFile == NULL) {
         perror("Error opening users file");
@@ -474,7 +472,6 @@ void saveStateToFile(Book* bookHead, User* userHead) {
     while (userHead != NULL) {
         fprintf(usersFile, "%s;%d;", userHead->name, userHead->borrowedBooks);
 
-        // Spremi posuđene knjige korisnika odvojene zarezima
         for (int i = 0; i < userHead->borrowedBooks; i++) {
             fprintf(usersFile, "%s", userHead->borrowedBooksList[i]->title);
 
@@ -494,7 +491,6 @@ void saveStateToFile(Book* bookHead, User* userHead) {
 }
 
 void loadStateFromFile(Book** bookHead, User** userHead) {
-    // Učitavanje knjiga
     FILE* booksFile = fopen("books.txt", "r");
     if (booksFile == NULL) {
         perror("Error opening books file");
@@ -511,44 +507,67 @@ void loadStateFromFile(Book** bookHead, User** userHead) {
 
     fclose(booksFile);
 
-    // Učitavanje korisnika
-    //FILE* usersFile = fopen("users.txt", "r");
-    //if (usersFile == NULL) {
-    //    perror("Error opening users file");
-    //    exit(EXIT_FAILURE);
-    //}
+    FILE* usersFile = fopen("users.txt", "r");
+    if (usersFile == NULL) {
+        perror("Error opening users file");
+        exit(EXIT_FAILURE);
+    }
 
-    //char line[256]; // Prilagodite veličinu prema potrebi
+    while (fscanf(usersFile, "%[^;];%d;", title, &copies) == 2) {
+        // Ovdje možete izravno dodati korisnike u vezanu listu i sortirati ih abecedno
+        User* newUser = (User*)malloc(sizeof(User));
+        if (!newUser) {
+            perror("Memory allocation error");
+            exit(EXIT_FAILURE);
+        }
 
-    //while (fgets(line, sizeof(line), usersFile) != NULL) {
-    //    // Učitavanje korisnika
-    //    char userName[50];
-    //    int borrowedBooks;
+        strcpy(newUser->name, title);
+        newUser->borrowedBooks = copies;
 
-    //    sscanf(line, "%49[^;];%d;", userName, &borrowedBooks);
+        // Postavljanje pokazivača na vezane liste
+        newUser->next = NULL;
 
-    //    User* currentUser = addUserSorted(userHead, userName);
-    //    currentUser->borrowedBooks = borrowedBooks;
+        // Sortiranje abecedno
+        User** current = userHead;
+        while (*current != NULL && strcmp((*current)->name, title) < 0) {
+            current = &(*current)->next;
+        }
 
-    //    // Učitavanje posuđenih knjiga korisnika
-    //    if (borrowedBooks > 0) {
-    //        char* token = strtok(line, ";");
-    //        for (int i = 0; i < 2; i++) {
-    //            token = strtok(NULL, ";");  // Preskoči prva dva polja (ime i broj posuđenih knjiga)
-    //        }
+        // Dodavanje korisnika u vezanu listu
+        newUser->next = *current;
+        *current = newUser;
 
-    //        for (int i = 0; i < borrowedBooks; i++) {
-    //            token = strtok(NULL, ";");
-    //            Book* borrowedBook = findBook(*bookHead, token);
+        printf("Loaded user: %s\n", title);
 
-    //            if (borrowedBook != NULL) {
-    //                borrowBook(currentUser, borrowedBook);
-    //            }
-    //        }
-    //    }
-    //}
+        // Učitavanje posuđenih knjiga korisnika
+        if (copies > 0) {
+            if (fscanf(usersFile, "%[^;];", title) != 1) {
+                perror("Error reading borrowed books");
+                exit(EXIT_FAILURE);
+            }
 
-    //fclose(usersFile);
+            // Razdvajanje posuđenih knjiga po zarezima
+            char* token = strtok(title, ",");
+            while (token != NULL) {
+                // Ovdje možete izravno dodati posuđene knjige korisnicima
+                Book* borrowedBook = findBook(*bookHead, token);
+
+                if (borrowedBook != NULL) {
+                    borrowBook(newUser, borrowedBook);
+                    printf("Borrowed book: %s\n", token);
+                }
+                else {
+                    printf("Book not found: %s\n", token);
+                }
+
+                token = strtok(NULL, ",");
+            }
+        }
+
+        fscanf(usersFile, "\n");  // Preskoči prelazak u novi red
+    }
+
+    fclose(usersFile);
 
     printf("Data loaded successfully.\n");
 }
