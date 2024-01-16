@@ -1,0 +1,10 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "task-Lab1",
+      "appliesTo": "Vjezba1/Lab1.c",
+      "type": "launch"
+    }
+  ]
+}
