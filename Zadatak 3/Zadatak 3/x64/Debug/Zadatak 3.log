@@ -1,7 +1,0 @@
-﻿  Zadatak 3.c
-C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 3\Zadatak 3\Zadatak 3.c(112,13): warning C4013: 'InsertAfterPerson' undefined; assuming extern returning int
-C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 3\Zadatak 3\Zadatak 3.c(138,12): warning C4013: 'ReadFromTxt' undefined; assuming extern returning int
-C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 3\Zadatak 3\Zadatak 3.c(70,7): warning C4047: 'initializing': 'char' differs in levels of indirection from 'char [2]'
-C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 3\Zadatak 3\Zadatak 3.c(485,3): warning C4047: 'return': 'Position' differs in levels of indirection from 'int'
-C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 3\Zadatak 3\Zadatak 3.c(393): warning C4172: returning address of local variable or temporary: surname
-  Zadatak 3.vcxproj -> C:\Users\Ante\Desktop\programiranje\strukture\strukturepodataka\Zadatak 3\x64\Debug\Zadatak 3.exe
