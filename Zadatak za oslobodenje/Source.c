@@ -67,10 +67,13 @@ int borrowBook(Book* book, User* user, const int numBooks);
 int borrowBookInput(User* userHead, Book* bookHead);
 int returnBook(User* user, Book* book, int numBooks);
 int returnBooksInput(User* userHead, Book* bookHead);
+void freeMemory(Book* bookHead, User* userHead);
 
 int main() {
 	Book* bookHead = NULL;
 	User* userHead = NULL;
+
+
 
 	int choice;
 	do {
@@ -83,6 +86,7 @@ int main() {
 		printf("6. Search book by author\n");
 		printf("7. Borrow books\n");
 		printf("8. Return books\n");
+		printf("9. Save data\n");
 		printf("0. Exit\n");
 
 
@@ -115,6 +119,7 @@ int main() {
 			returnBooksInput(userHead, bookHead);
 			break;
 		case 0:
+			freeMemory(bookHead, userHead);
 			break;
 		default:
 			printf("Wrong option! Try again.\n");
@@ -579,4 +584,34 @@ int returnBooksInput(User* userHead, Book* bookHead) {
 	printf("%d book(s) returned successfully by %s.\n", booksReturned, currentUser->name);
 
 	return EXIT_SUCCESS;
+}
+
+void freeMemory(Book* bookHead, User* userHead) {
+	while (bookHead != NULL) {
+		Book* tempBook = bookHead;
+		bookHead = bookHead->next;
+
+		Borrower* borrower = tempBook->borrowers;
+		while (borrower != NULL) {
+			Borrower* tempBorrower = borrower;
+			borrower = borrower->next;
+			free(tempBorrower);
+		}
+
+		free(tempBook);
+	}
+
+	while (userHead != NULL) {
+		User* tempUser = userHead;
+		userHead = userHead->next;
+
+		BorrowedBook* borrowedBook = tempUser->borrowedBooksList;
+		while (borrowedBook != NULL) {
+			BorrowedBook* tempBorrowedBook = borrowedBook;
+			borrowedBook = borrowedBook->next;
+			free(tempBorrowedBook);
+		}
+
+		free(tempUser);
+	}
 }
