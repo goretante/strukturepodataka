@@ -68,13 +68,16 @@ int borrowBookInput(User* userHead, Book* bookHead);
 int returnBook(User* user, Book* book, int numBooks);
 int returnBooksInput(User* userHead, Book* bookHead);
 int saveToFile(User* userHead, Book* bookHead);
+Book* loadBookFromFile(Book* bookHead);
+User* loadUsersFromFile(User* userHead, Book* bookHead);
 void freeMemory(Book* bookHead, User* userHead);
-
 
 int main() {
 	Book* bookHead = NULL;
 	User* userHead = NULL;
 
+	bookHead = loadBookFromFile(bookHead);
+	userHead = loadUsersFromFile(userHead, bookHead);
 
 	int choice;
 	do {
@@ -602,12 +605,7 @@ int saveToFile(User* userHead, Book* bookHead) {
 	}
 
 	while (currentBook != NULL) {
-		fprintf(filePointer, "%s;%s;%d;%d;", currentBook->title, currentBook->author, currentBook->year, currentBook->copies);
-		while (currentBook->borrowers != NULL) {
-			fprintf(filePointer, "%s,", currentBook->borrowers->user->name);
-			currentBook->borrowers = currentBook->borrowers->next;
-		}
-		fprintf(filePointer, "\n");
+		fprintf(filePointer, "%s;%s;%d;%d;\n", currentBook->title, currentBook->author, currentBook->year, currentBook->copies);
 		currentBook = currentBook->next;
 	}
 
@@ -626,11 +624,67 @@ int saveToFile(User* userHead, Book* bookHead) {
 			currentUser->borrowedBooksList = currentUser->borrowedBooksList->next;
 		}
 		fprintf(filePointer, "\n");
+		currentUser = currentUser->next;
 	}
 
 	fclose(filePointer);
 
+	printf("---------------\n");
+
+	printf("Data saved successfully!\n");
+
 	return EXIT_SUCCESS;
+}
+
+Book* loadBookFromFile(Book* bookHead) {
+	FILE* filePointer = NULL;
+	char title[50] = { 0 }, author[50] = { 0 };
+	int year = 0, copies = 0;
+
+	filePointer = fopen("books.txt", "r");
+	if (!filePointer) {
+		printf("Could not open books file!\n");
+		return bookHead;
+	}
+
+	while (fscanf(filePointer, "%49[^;];%49[^;];%d;%d;", title, author, &year, &copies) == 4) {
+		bookHead = addBookSorted(bookHead, title, author, year, copies);
+	}
+
+	fclose(filePointer);
+
+	printf("Books loaded successfully!\n");
+
+	return bookHead;
+}
+
+User* loadUsersFromFile(User* userHead, Book* bookHead) {
+	FILE* filePointer = fopen("users.txt", "r");
+	char name[50] = { 0 };
+	int borrowedBooks;
+
+	while (fscanf(filePointer, "%49[^;];%d;", name, &borrowedBooks) == 2) {
+		userHead = addUserSorted(userHead, name);
+
+		if (borrowedBooks >= 1) {
+			for (int i = 0; i < borrowedBooks; i++) {
+				char bookTitle[50];
+				fscanf(filePointer, "%49[^,],", bookTitle);
+				Book* borrowedBook = findBook(bookHead, bookTitle);
+
+				if (borrowedBook) {
+					borrowedBook->copies++;
+					borrowBook(borrowedBook, findUser(userHead, name), 1);
+				}
+			}
+		}
+	}
+
+	fclose(filePointer);
+
+	printf("Users loaded successfully!\n");
+
+	return userHead;
 }
 
 void freeMemory(Book* bookHead, User* userHead) {
