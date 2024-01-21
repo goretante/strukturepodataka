@@ -67,12 +67,13 @@ int borrowBook(Book* book, User* user, const int numBooks);
 int borrowBookInput(User* userHead, Book* bookHead);
 int returnBook(User* user, Book* book, int numBooks);
 int returnBooksInput(User* userHead, Book* bookHead);
+int saveToFile(User* userHead, Book* bookHead);
 void freeMemory(Book* bookHead, User* userHead);
+
 
 int main() {
 	Book* bookHead = NULL;
 	User* userHead = NULL;
-
 
 
 	int choice;
@@ -117,6 +118,9 @@ int main() {
 			break;
 		case 8:
 			returnBooksInput(userHead, bookHead);
+			break;
+		case 9:
+			saveToFile(userHead, bookHead);
 			break;
 		case 0:
 			freeMemory(bookHead, userHead);
@@ -582,6 +586,49 @@ int returnBooksInput(User* userHead, Book* bookHead) {
 	int booksReturned = returnBook(currentUser, currentBook, numBooks);
 
 	printf("%d book(s) returned successfully by %s.\n", booksReturned, currentUser->name);
+
+	return EXIT_SUCCESS;
+}
+
+int saveToFile(User* userHead, Book* bookHead) {
+	User* currentUser = userHead;
+	Book* currentBook = bookHead;
+	FILE* filePointer = NULL;
+
+	filePointer = fopen("books.txt", "w");
+	if (!filePointer) {
+		printf("Could not open the file!\n");
+		return EXIT_FAILURE;
+	}
+
+	while (currentBook != NULL) {
+		fprintf(filePointer, "%s;%s;%d;%d;", currentBook->title, currentBook->author, currentBook->year, currentBook->copies);
+		while (currentBook->borrowers != NULL) {
+			fprintf(filePointer, "%s,", currentBook->borrowers->user->name);
+			currentBook->borrowers = currentBook->borrowers->next;
+		}
+		fprintf(filePointer, "\n");
+		currentBook = currentBook->next;
+	}
+
+	fclose(filePointer);
+
+	filePointer = fopen("users.txt", "w");
+	if (!filePointer) {
+		printf("Could not open the file!\n");
+		return EXIT_FAILURE;
+	}
+
+	while (currentUser != NULL) {
+		fprintf(filePointer, "%s;%d;", currentUser->name, currentUser->borrowedBooks);
+		while (currentUser->borrowedBooksList != NULL) {
+			fprintf(filePointer, "%s,", currentUser->borrowedBooksList->book->title);
+			currentUser->borrowedBooksList = currentUser->borrowedBooksList->next;
+		}
+		fprintf(filePointer, "\n");
+	}
+
+	fclose(filePointer);
 
 	return EXIT_SUCCESS;
 }

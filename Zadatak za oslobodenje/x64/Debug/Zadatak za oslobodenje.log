@@ -1,2 +1,9 @@
 ﻿  Source.c
+C:\Users\Krešo\Desktop\Ante\strukturepodataka\Zadatak za oslobodenje\Source.c(623,24): warning C4473: 'fprintf' : not enough arguments passed for format string
+  C:\Users\Krešo\Desktop\Ante\strukturepodataka\Zadatak za oslobodenje\Source.c(623,24):
+  placeholders and their parameters expect 2 variadic arguments, but 0 were provided
+  C:\Users\Krešo\Desktop\Ante\strukturepodataka\Zadatak za oslobodenje\Source.c(623,24):
+  the missing variadic argument 1 is required by format string '%s'
+  
+C:\Users\Krešo\Desktop\Ante\strukturepodataka\Zadatak za oslobodenje\Source.c(625,25): warning C4477: 'fprintf' : format string '%s' requires an argument of type 'char *', but variadic argument 1 has type 'Book *'
   Zadatak za oslobodenje.vcxproj -> C:\Users\Krešo\Desktop\Ante\strukturepodataka\Zadatak za oslobodenje\x64\Debug\Zadatak za oslobodenje.exe
