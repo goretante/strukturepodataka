@@ -1,573 +1,582 @@
-ï»¿#define _CRT_SECURE_NO_WARNINGS
+/*
+"BookHaven" je knjižnica koja želi unaprijediti svoj sustav praæenja knjiga, autora i korisnika.
+Svaka knjiga ima informacije o naslovu, autoru, godini izdanja i dostupnim primjercima.
+Korisnici mogu posuðivati knjige i vratiti ih nakon nekog vremena.
+Program mora korisniku omoguæiti:
+	a) ispis svih knjiga abecedno (tako da se mogu vidjeti svi podatci o knjizi i korisnici koji trenutno posuðuju knjigu) - done
+	b) ispis svih korisnika abecedno (tako da se mogu vidjeti sve knjige koje je neki korisnik posudio) - done
+	c) pretraživanje knjiga po godini izdanja (tako da se mogu vidjeti sve knjige iz te godine i njihova kolièina) - done
+	d) pretraživanje knjiga po nazivu autora (tako da se mogu vidjeti sve knjige tog autora i njihova kolièina) - done
+	e) unos novog korisnika - done
+	f) posudba knjige korisniku - napokon gotovo
+		- može više primjeraka iste knjige posuditi od puta
+		- korisnik u sebe nikad ne smije imati više od 5 knjiga sve skupa
+		- ako pokušava napravit posudbu koja æe ga dovesti preko tog broja program treba upozoriti korisnika na to i ispisati mu broj koliko još knjiga posudit
+		- ako korisnik pita za više primjeraka knjige, a knjižnica na stanju nema nema dovoljno treba korisniku omoguæiti izbor hoæe li posudit to što ima ili ne.
+	g) povratak knjiga na stanje
+	h) spremi (u datoteku/datoteke spremiti trenutno stanje u knjižnici, tako da kad se iduæi put pokrene program moguæe nastaviti od spremljenog stanja)
+*/
+
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-
-// structures
 struct Book;
 struct User;
 
+typedef struct BorrowedBook {
+	struct Book* book;
+	struct User* borrower;
+	struct BorrowedBook* next;
+} BorrowedBook;
+
+typedef struct Borrower {
+	struct User* user;
+	struct Borrower* next;
+} Borrower;
+
 typedef struct Book {
-    char title[50];
-    char author[50];
-    int year;
-    int copies;
-    struct User* borrower;
-    struct Book* next;
+	char title[50];
+	char author[50];
+	int year;
+	int copies;
+	Borrower* borrowers;
+	struct Book* next;
 } Book;
 
 typedef struct User {
-    char name[50];
-    int borrowedBooks;
-    struct Book* borrowedBooksList[5];
-    struct User* next;
+	char name[50];
+	int borrowedBooks;
+	BorrowedBook* borrowedBooksList;
+	struct User* next;
 } User;
 
-// function prototypes
-void printBooks(Book* head);
-void printUsers(User* head);
 Book* addBookSorted(Book* head, const char* title, const char* author, int year, int copies);
 Book* addNewBookSorted(Book* head);
-Book* findBook(Book* head, const char* title);
 User* addUserSorted(User* head, const char* name);
 User* addNewUserSorted(User* head);
-User* findUser(User* head, const char* name);
-void searchBooksByYear(Book* head, int year);
-void searchBooksByAuthor(Book* head, const char* author);
-void borrowBook(User* user, Book* book);
-void borrowBookFromUserInput(User* userHead, Book* bookHead);
-void returnBook(User* user, Book* book);
-void returnBookFromUserInput(User* userHead, Book* bookHead);
-void saveStateToFile(Book* bookHead, User* userHead);
-void loadStateFromFile(Book** bookHead, User** userHead);
+int printBooks(Book* head);
+int printUsers(User* head);
+int searchBookByYear(Book* head);
+int searchBookByAuthor(Book* head);
+Book* findBook(Book* bookHead, const char* bookname);
+User* findUser(User* userHead, const char* username);
+int borrowBook(Book* book, User* user, const int numBooks);
+int borrowBookInput(User* userHead, Book* bookHead);
+int returnBook(User* user, Book* book, int numBooks);
+int returnBooksInput(User* userHead, Book* bookHead);
 
-// main
 int main() {
-    Book* bookHead = NULL;
-    User* userHead = NULL;
+	Book* bookHead = NULL;
+	User* userHead = NULL;
 
-    loadStateFromFile(&bookHead, &userHead);
-
-    int choice;
-    do {
-        printf("\nOptions:\n");
-        printf("1. Print all books alphabetically\n");
-        printf("2. Print all users alphabetically\n");
-        printf("3. Search books by year\n");
-        printf("4. Search books by author\n");
-        printf("5. Add a new user\n");
-        printf("6. Borrow a book\n");
-        printf("7. Return a book\n");
-        printf("8. Save state\n");
-        printf("9. Add new book\n");
-        printf("0. Exit\n");
-
-        printf("Enter your choice: ");
-        scanf("%d", &choice);
-
-        switch (choice) {
-        case 1:
-            printBooks(bookHead);
-            break;
-        case 2:
-            printUsers(userHead);
-            break;
-        case 3:
-            printf("Enter the year: ");
-            int searchYear;
-            scanf("%d", &searchYear);
-            searchBooksByYear(bookHead, searchYear);
-            break;
-        case 4:
-            printf("Enter the author's name: ");
-            char searchAuthor[50];
-            scanf(" %[^\n]", searchAuthor);
-            searchBooksByAuthor(bookHead, searchAuthor);
-            break;
-        case 5:
-            userHead = addNewUserSorted(userHead);
-            break;
-        case 6:
-            borrowBookFromUserInput(userHead, bookHead);
-            break;
-        case 7:
-            returnBookFromUserInput(userHead, bookHead);
-            break;
-        case 8:
-            saveStateToFile(bookHead, userHead);
-            break;
-        case 9:
-            bookHead = addNewBookSorted(bookHead);
-            break;
-        case 0:
-            // Izlaz iz programa
-            break;
-        default:
-            printf("Invalid choice. Please enter a valid option.\n");
-        }
-
-    } while (choice != 0);
-
-    // OslobaÄ‘anje memorije prije izlaska iz programa
-    // freeMemory(bookHead, userHead);
-
-    return EXIT_SUCCESS;
-}
+	int choice;
+	do {
+		printf("\nOptions:\n");
+		printf("1. Add new book\n");
+		printf("2. Add new user\n");
+		printf("3. Print books\n");
+		printf("4. Print users\n");
+		printf("5. Search book by year\n");
+		printf("6. Search book by author\n");
+		printf("7. Borrow books\n");
+		printf("8. Return books\n");
+		printf("0. Exit\n");
 
 
-// functions
-void printBooks(Book * head) {
-    Book* current = head;
+		printf("Enter your choice: ");
+		scanf("%d", &choice);
 
-    while (current != NULL) {
-        printf("Title: %s\n", current->title);
-        printf("Author: %s\n", current->author);
-        printf("Year: %d\n", current->year);
-        printf("Available Copies: %d\n", current->copies);
+		switch (choice) {
+		case 1:
+			bookHead = addNewBookSorted(bookHead);
+			break;
+		case 2:
+			userHead = addNewUserSorted(userHead);
+			break;
+		case 3:
+			printBooks(bookHead);
+			break;
+		case 4:
+			printUsers(userHead);
+			break;
+		case 5:
+			searchBookByYear(bookHead);
+			break;
+		case 6:
+			searchBookByAuthor(bookHead);
+			break;
+		case 7:
+			borrowBookInput(userHead, bookHead);
+			break;
+		case 8:
+			returnBooksInput(userHead, bookHead);
+			break;
+		case 0:
+			break;
+		default:
+			printf("Wrong option! Try again.\n");
+		}
+	} while (choice != 0);
 
-        if (current->borrower != NULL) {
-            printf("Borrowed by: %s\n", current->borrower->name);
-        }
 
-        printf("\n");
-
-        current = current->next;
-    }
-}
-
-void printUsers(User* head) {
-    if (head == NULL) {
-        printf("No users found.\n");
-        return;
-    }
-
-    printf("Users:\n");
-    printf("------\n");
-
-    User* current = head;
-
-    while (current != NULL) {
-        printf("Name: %s\n", current->name);
-        printf("Borrowed books: %d\n", current->borrowedBooks);
-
-        if (current->borrowedBooks > 0) {
-            printf("Borrowed Books:\n");
-            for (int i = 0; i < current->borrowedBooks; i++) {
-                printf("  - %s\n", current->borrowedBooksList[i]->title);
-            }
-        }
-
-        printf("\n");
-
-        current = current->next;
-    }
+	return 0;
 }
 
 Book* addBookSorted(Book* head, const char* title, const char* author, int year, int copies) {
-    Book* newBook = (Book*)malloc(sizeof(Book));
-    if (!newBook) {
-        perror("Memory allocation error");
-        exit(EXIT_FAILURE);
-    }
+	Book* newBook = (Book*)malloc(sizeof(Book));
+	if (!newBook) {
+		perror("Memory allocation error!\n");
+		return NULL;
+	}
 
-    strcpy(newBook->title, title);
-    strcpy(newBook->author, author);
-    newBook->year = year;
-    newBook->copies = copies;
-    newBook->borrower = NULL;
+	strcpy(newBook->title, title);
+	strcpy(newBook->author, author);
+	newBook->year = year;
+	newBook->copies = copies;
+	newBook->borrowers = NULL;
 
-    if (head == NULL || strcmp(title, head->title) < 0) {
-        newBook->next = head;
-        return newBook;
-    }
+	if (head == NULL || strcmp(title, head->title) < 0) {
+		newBook->next = head;
+		return newBook;
+	}
 
-    Book* current = head;
-    while (current->next != NULL && strcmp(title, current->next->title) > 0) {
-        current = current->next;
-    }
+	Book* current = head;
+	while (current->next != NULL && strcmp(title, current->next->title) > 0) {
+		current = current->next;
+	}
 
-    newBook->next = current->next;
-    current->next = newBook;
+	newBook->next = current->next;
+	current->next = newBook;
 
-    return head;
+	return head;
 }
 
 Book* addNewBookSorted(Book* head) {
-    char title[50];
-    char author[50];
-    int year, copies;
+	char title[50];
+	char author[50];
+	int year;
+	int copies;
 
-    printf("Enter the title of the book: ");
-    scanf(" %[^\n]", title);
+	printf("---------------\n");
 
-    printf("Enter the author of the book: ");
-    scanf(" %[^\n]", author);
+	printf("Enter the title of the book: ");
+	scanf(" %[^\n]", title);
 
-    printf("Enter the year of publication: ");
-    scanf("%d", &year);
+	printf("Enter the author of the book: ");
+	scanf(" %[^\n]", author);
 
-    printf("Enter the number of copies available: ");
-    scanf("%d", &copies);
+	printf("Enter the year of publication: ");
+	scanf("%d", &year);
 
-    head = addBookSorted(head, title, author, year, copies);
+	printf("Enter the number of available copies: ");
+	scanf("%d", &copies);
 
-    printf("Book added successfully!\n");
+	head = addBookSorted(head, title, author, year, copies);
 
-    return head;
-}
+	printf("Book added successfully.\n");
 
-Book* findBook(Book* head, const char* title) {
-    Book* current = head;
-    while (current != NULL) {
-        if (strcmp(current->title, title) == 0) {
-            return current;
-        }
-        current = current->next;
-    }
-    return NULL;
+	return head;
 }
 
 User* addUserSorted(User* head, const char* name) {
-    User* newUser = (User*)malloc(sizeof(User));
-    if (!newUser) {
-        perror("Memory allocation error");
-        exit(EXIT_FAILURE);
-    }
+	User* newUser = (User*)malloc(sizeof(User));
+	if (!newUser) {
+		printf("Error allocating memory!\n");
+		return NULL;
+	}
 
-    strcpy(newUser->name, name);
-    newUser->borrowedBooks = 0;
+	strcpy(newUser->name, name);
+	newUser->borrowedBooks = 0;
+	newUser->borrowedBooksList = NULL;
 
-    if (head == NULL || strcmp(name, head->name) < 0) {
-        newUser->next = head;
-        return newUser;
-    }
+	if (head == NULL || strcmp(name, head->name) < 0) {
+		newUser->next = head;
+		return newUser;
+	}
 
-    User* current = head;
-    while (current->next != NULL && strcmp(name, current->next->name) > 0) {
-        current = current->next;
-    }
+	User* current = head;
+	while (current->next != NULL && strcmp(name, current->next->name) > 0) {
+		current = current->next;
+	}
 
-    newUser->next = current->next;
-    current->next = newUser;
+	newUser->next = current->next;
+	current->next = newUser;
 
-    return head;
+	return head;
 }
 
 User* addNewUserSorted(User* head) {
-    char name[50];
+	char name[50];
 
-    printf("Enter the name of the user: ");
-    scanf(" %[^\n]", name);
+	printf("---------------\n");
 
-    head = addUserSorted(head, name);
+	printf("Enter the name of the user: ");
+	scanf(" %[^\n]", name);
 
-    printf("User added successfully!\n");
+	head = addUserSorted(head, name);
 
-    return head;
+	printf("User added successfully!\n");
+
+	return head;
 }
 
-User* findUser(User* head, const char* name) {
-    User* current = head;
-    while (current != NULL) {
-        if (strcmp(current->name, name) == 0) {
-            return current;
-        }
-        current = current->next;
-    }
-    return NULL;
+int printBooks(Book* head) {
+	Book* current = head;
+
+	printf("---------------\n");
+
+	while (current != NULL) {
+		printf("Title: %s\n", current->title);
+		printf("Author: %s\n", current->author);
+		printf("Year: %d\n", current->year);
+		printf("Available copies: %d\n", current->copies);
+
+		if (current->borrowers != NULL) {
+			printf("Borrowed by:\n");
+			Borrower* borrower = current->borrowers;
+			while (borrower != NULL) {
+				printf(" - %s\n", borrower->user->name);
+				borrower = borrower->next;
+			}
+		}
+		printf("\n");
+
+		current = current->next;
+	}
+
+	return EXIT_SUCCESS;
 }
 
-void searchBooksByYear(Book* head, int year) {
-    Book* current = head;
-    int found = 0;
+int printUsers(User* head) {
+	User* current = head;
 
-    printf("Books published in %d:\n", year);
-    printf("----------------------\n");
+	printf("---------------\n");
 
-    while (current != NULL) {
-        if (current->year == year) {
-            printf("Title: %s\n", current->title);
-            printf("Author: %s\n", current->author);
-            printf("Available Copies: %d\n", current->copies);
+	while (current != NULL) {
+		printf("Name: %s\n", current->name);
+		printf("Number of borrowed books: %d\n", current->borrowedBooks);
 
-            if (current->borrower != NULL) {
-                printf("Borrowed by: %s\n", current->borrower->name);
-            }
+		if (current->borrowedBooks > 0) {
+			printf("Borrowed books:\n");
+			BorrowedBook* borrowedBook = current->borrowedBooksList;
+			for (int i = 0; i < current->borrowedBooks; i++) {
+				printf("  - %s\n", borrowedBook->book->title);
+				borrowedBook = borrowedBook->next;
+			}
+		}
 
-            printf("\n");
+		printf("\n");
 
-            found = 1;
-        }
+		current = current->next;
+	}
 
-        current = current->next;
-    }
-
-    if (!found) {
-        printf("No books found for the given year.\n");
-    }
+	return EXIT_SUCCESS;
 }
 
-void searchBooksByAuthor(Book* head, const char* author) {
-    Book* current = head;
-    int found = 0;
+int searchBookByYear(Book* head) {
+	Book* current = head;
+	int year;
+	int found = 0;
 
-    printf("Books by author %s:\n", author);
-    printf("---------------------\n");
+	printf("---------------\n");
 
-    while (current != NULL) {
-        if (strcmp(current->author, author) == 0) {
-            printf("Title: %s\n", current->title);
-            printf("Year: %d\n", current->year);
-            printf("Available Copies: %d\n", current->copies);
+	printf("Enter the year: ");
+	scanf("%d", &year);
 
-            if (current->borrower != NULL) {
-                printf("Borrowed by: %s\n", current->borrower->name);
-            }
+	printf("---------------\n");
 
-            printf("\n");
+	printf("Books published in %d:\n", year);
 
-            found = 1;
-        }
+	while (current != NULL) {
+		if (current->year == year) {
+			printf("Title: %s\n", current->title);
+			printf("Author: %s\n", current->author);
+			printf("Year: %d\n", current->year);
+			printf("Available copies: %d\n", current->copies);
 
-        current = current->next;
-    }
+			Borrower* borrower = current->borrowers;
+			if (borrower != NULL) {
+				printf("Borrowed by:\n");
+				while (borrower != NULL) {
+					printf(" - %s\n", borrower->user->name);
+					borrower = borrower->next;
+				}
+			}
+			printf("\n");
+			found = 1;
+		}
+		current = current->next;
+	}
 
-    if (!found) {
-        printf("No books found for the given author.\n");
-    }
+	if (!found)
+		printf("No books found for the given year.\n");
+
+	return EXIT_SUCCESS;
 }
 
-void borrowBook(User* user, Book* book) {
-    if (user->borrowedBooks >= 5) {
-        printf("You have already borrowed the maximum number of books.\n");
-        return;
-    }
+int searchBookByAuthor(Book* head) {
+	Book* current = head;
+	char author[50];
+	int found = 0;
 
-    if (book->copies <= 0) {
-        printf("Sorry, the book '%s' by %s is currently not available.\n", book->title, book->author);
-        return;
-    }
+	printf("---------------\n");
 
-    user->borrowedBooksList[user->borrowedBooks] = book;
-    user->borrowedBooks++;
+	printf("Enter the author's name: ");
+	scanf(" %[^\n]", author);
 
-    book->copies--;
+	printf("---------------\n");
 
-    book->borrower = user;
+	printf("Books written by %s:\n", author);
 
-    printf("Book '%s' by %s borrowed successfully by %s.\n", book->title, book->author, user->name);
+	while (current != NULL) {
+		if (strcmp(current->author, author) == 0) {
+			printf("Title: %s\n", current->title);
+			printf("Author: %s\n", current->author);
+			printf("Year: %d\n", current->year);
+			printf("Available copies: %d\n", current->copies);
+
+			Borrower* borrower = current->borrowers;
+			if (borrower != NULL) {
+				printf("Borrowed by:\n");
+				while (borrower != NULL) {
+					printf(" - %s\n", borrower->user->name);
+					borrower = borrower->next;
+				}
+			}
+			printf("\n");
+			found = 1;
+		}
+		current = current->next;
+	}
+
+	if (!found) {
+		printf("No books found for the given author.\n");
+	}
+
+	return EXIT_SUCCESS;
 }
 
-void borrowBookFromUserInput(User* userHead, Book* bookHead) {
-    printf("Enter your name: ");
-    char userName[50];
-    scanf(" %[^\n]", userName);
+Book* findBook(Book* bookHead, const char* bookname) {
+	Book* current = bookHead;
 
-    User* currentUser = findUser(userHead, userName);
+	while (current != NULL) {
+		if (strcmp(current->title, bookname) == 0) {
+			return current;
+		}
+		current = current->next;
+	}
 
-    if (currentUser == NULL) {
-        printf("User not found.\n");
-        return;
-    }
-
-    printf("Enter the title of the book you want to borrow: ");
-    char bookTitle[50];
-    scanf(" %[^\n]", bookTitle);
-
-    Book* currentBook = bookHead;
-
-    while (currentBook != NULL) {
-        if (strcmp(currentBook->title, bookTitle) == 0) {
-            borrowBook(currentUser, currentBook);
-            return;
-        }
-
-        currentBook = currentBook->next;
-    }
-
-    printf("Book not found.\n");
+	return NULL;
 }
 
-void returnBook(User* user, Book* book) {
-    int found = 0;
-    for (int i = 0; i < user->borrowedBooks; i++) {
-        if (user->borrowedBooksList[i] == book) {
-            found = 1;
+User* findUser(User* userHead, const char* username) {
+	User* current = userHead;
 
-            for (int j = i; j < user->borrowedBooks - 1; j++) {
-                user->borrowedBooksList[j] = user->borrowedBooksList[j + 1];
-            }
+	while (current != NULL) {
+		if (strcmp(current->name, username) == 0) {
+			return current;
+		}
+		current = current->next;
+	}
 
-            user->borrowedBooks--;
-
-            book->copies++;
-
-            book->borrower = NULL;
-
-            printf("Book '%s' returned successfully by %s.\n", book->title, user->name);
-            break;
-        }
-    }
-
-    if (!found) {
-        printf("You didn't borrow the book '%s' by %s.\n", book->title, book->author);
-    }
+	return NULL;
 }
 
-void returnBookFromUserInput(User* userHead, Book* bookHead) {
-    printf("Enter your name: ");
-    char userName[50];
-    scanf(" %[^\n]", userName);
+int borrowBook(Book* book, User* user, int numBooks) {
+	int i, checkamount = 0;
+	int noBooksOnStart = book->copies;
 
-    // PronaÄ‘i korisnika
-    User* currentUser = findUser(userHead, userName);
+	if (user->borrowedBooks >= 5) {
+		printf("You've already borrowed the maximum number of books!\n");
+		return EXIT_FAILURE;
+	}
 
-    if (currentUser == NULL) {
-        printf("User not found.\n");
-        return;
-    }
+	if ((user->borrowedBooks + numBooks) > 5) {
+		printf("You will borrow more books than you can have!\n");
+		printf("You can borrow %d more books.\n", 5 - user->borrowedBooks);
+		return EXIT_FAILURE;
+	}
 
-    printf("Enter the title of the book you want to return: ");
-    char bookTitle[50];
-    scanf(" %[^\n]", bookTitle);
+	if (book->copies <= 0) {
+		printf("Currently we are out of these books!\n");
+		return EXIT_FAILURE;
+	}
 
-    // PronaÄ‘i knjigu
-    Book* currentBook = bookHead;
+	checkamount = book->copies - numBooks;
+	if (checkamount < 0) {
+		char choice;
+		printf("We have fewer books than you want to borrow (%d).\n", book->copies);
+		printf("Do you want them all? (Y/N): ");
+		scanf(" %c", &choice);
+		switch (choice) {
+		case 'Y':
+		case 'y':
+			for (i = 0; i < noBooksOnStart; i++) {
+				BorrowedBook* borrowedBook = (BorrowedBook*)malloc(sizeof(BorrowedBook));
+				borrowedBook->book = book;
+				borrowedBook->borrower = user;
+				borrowedBook->next = user->borrowedBooksList;
+				user->borrowedBooksList = borrowedBook;
 
-    while (currentBook != NULL) {
-        if (strcmp(currentBook->title, bookTitle) == 0) {
-            returnBook(currentUser, currentBook);
-            return;
-        }
+				user->borrowedBooks++;
+				book->copies--;
 
-        currentBook = currentBook->next;
-    }
+				Borrower* borrower = (Borrower*)malloc(sizeof(Borrower));
+				borrower->user = user;
+				borrower->next = book->borrowers;
+				book->borrowers = borrower;
+			}
+			printf("%d book(s) by %s borrowed successfully by %s.\n", noBooksOnStart, book->title, user->name);
+			return EXIT_SUCCESS;
+			break;
+		case 'N':
+		case 'n':
+			printf("You've given up on borrowing the book.\n");
+			return EXIT_SUCCESS;
+		}
+	}
 
-    printf("Book not found.\n");
+	for (i = 0; i < numBooks; i++) {
+		BorrowedBook* borrowedBook = (BorrowedBook*)malloc(sizeof(BorrowedBook));
+		borrowedBook->book = book;
+		borrowedBook->borrower = user;
+		borrowedBook->next = user->borrowedBooksList;
+		user->borrowedBooksList = borrowedBook;
+
+		user->borrowedBooks++;
+		book->copies--;
+
+		Borrower* borrower = (Borrower*)malloc(sizeof(Borrower));
+		borrower->user = user;
+		borrower->next = book->borrowers;
+		book->borrowers = borrower;
+	}
+
+	printf("%d book(s) by %s borrowed successfully by %s.\n", numBooks, book->title, user->name);
+	return EXIT_SUCCESS;
 }
 
-void saveStateToFile(Book* bookHead, User* userHead) {
-    // Spremi knjige
-    FILE* booksFile = fopen("books.txt", "w");
-    if (booksFile == NULL) {
-        perror("Error opening books file");
-        exit(EXIT_FAILURE);
-    }
+int borrowBookInput(User* userHead, Book* bookHead) {
+	char username[50] = { 0 };
+	char bookname[50] = { 0 };
+	int nobooks = 0;
+	User* currentUser = NULL;
+	Book* currentBook = NULL;
 
-    while (bookHead != NULL) {
-        fprintf(booksFile, "%s;%s;%d;%d\n", bookHead->title, bookHead->author, bookHead->year, bookHead->copies);
-        bookHead = bookHead->next;
-    }
+	printf("---------------\n");
 
-    fclose(booksFile);
+	printf("Enter your name: ");
+	scanf(" %[^\n]", username);
 
-    FILE* usersFile = fopen("users.txt", "w");
-    if (usersFile == NULL) {
-        perror("Error opening users file");
-        exit(EXIT_FAILURE);
-    }
+	currentUser = findUser(userHead, username);
+	if (!currentUser) {
+		printf("User not found!\n");
+		return EXIT_FAILURE;
+	}
 
-    while (userHead != NULL) {
-        fprintf(usersFile, "%s;%d;", userHead->name, userHead->borrowedBooks);
+	printf("Enter the title of the book you want to borrow: ");
+	scanf(" %[^\n]", bookname);
 
-        for (int i = 0; i < userHead->borrowedBooks; i++) {
-            fprintf(usersFile, "%s", userHead->borrowedBooksList[i]->title);
+	currentBook = findBook(bookHead, bookname);
+	if (!currentBook) {
+		printf("Book not found!\n");
+		return EXIT_FAILURE;
+	}
 
-            if (i < userHead->borrowedBooks - 1) {
-                fprintf(usersFile, ",");
-            }
-        }
+	printf("Amount of books you want to borrow (1 - 5): ");
+	scanf("%d", &nobooks);
 
-        fprintf(usersFile, "\n");
+	borrowBook(currentBook, currentUser, nobooks);
 
-        userHead = userHead->next;
-    }
-
-    fclose(usersFile);
-
-    printf("Data saved successfully.\n");
+	return EXIT_SUCCESS;
 }
 
-void loadStateFromFile(Book** bookHead, User** userHead) {
-    FILE* booksFile = fopen("books.txt", "r");
-    if (booksFile == NULL) {
-        perror("Error opening books file");
-        exit(EXIT_FAILURE);
-    }
+int returnBook(User* user, Book* book, int numBooks) {
+	BorrowedBook* borrowedBook = user->borrowedBooksList;
+	BorrowedBook* prevBorrowedBook = NULL;
+	int booksReturned = 0;
 
-    char title[50];
-    char author[50];
-    int year, copies;
+	while (borrowedBook != NULL && booksReturned < numBooks) {
+		if (borrowedBook->book == book) {
+			book->copies++;
 
-    while (fscanf(booksFile, "%49[^;];%49[^;];%d;%d\n", title, author, &year, &copies) == 4) {
-        *bookHead = addBookSorted(*bookHead, title, author, year, copies);
-    }
+			if (prevBorrowedBook != NULL) {
+				prevBorrowedBook->next = borrowedBook->next;
+			}
+			else {
+				user->borrowedBooksList = borrowedBook->next;
+			}
 
-    fclose(booksFile);
+			BorrowedBook* temp = borrowedBook;
+			borrowedBook = borrowedBook->next;
+			free(temp);
 
-    FILE* usersFile = fopen("users.txt", "r");
-    if (usersFile == NULL) {
-        perror("Error opening users file");
-        exit(EXIT_FAILURE);
-    }
+			Borrower* currentBorrower = book->borrowers;
+			Borrower* prevBorrower = NULL;
+			while (currentBorrower != NULL) {
+				if (currentBorrower->user == user) {
+					if (prevBorrower != NULL) {
+						prevBorrower->next = currentBorrower->next;
+					}
+					else {
+						book->borrowers = currentBorrower->next;
+					}
+					free(currentBorrower);
+					break;
+				}
+				prevBorrower = currentBorrower;
+				currentBorrower = currentBorrower->next;
+			}
 
-    while (fscanf(usersFile, "%[^;];%d;", title, &copies) == 2) {
-        // Ovdje moÅ¾ete izravno dodati korisnike u vezanu listu i sortirati ih abecedno
-        User* newUser = (User*)malloc(sizeof(User));
-        if (!newUser) {
-            perror("Memory allocation error");
-            exit(EXIT_FAILURE);
-        }
+			booksReturned++;
+		}
+		else {
+			prevBorrowedBook = borrowedBook;
+			borrowedBook = borrowedBook->next;
+		}
+	}
 
-        strcpy(newUser->name, title);
-        newUser->borrowedBooks = copies;
+	user->borrowedBooks -= booksReturned;
 
-        // Postavljanje pokazivaÄa na vezane liste
-        newUser->next = NULL;
+	return booksReturned;
+}
 
-        // Sortiranje abecedno
-        User** current = userHead;
-        while (*current != NULL && strcmp((*current)->name, title) < 0) {
-            current = &(*current)->next;
-        }
+int returnBooksInput(User* userHead, Book* bookHead) {
+	char username[50] = { 0 };
+	char bookname[50] = { 0 };
+	int numBooks = 0;
+	User* currentUser = NULL;
+	Book* currentBook = NULL;
 
-        // Dodavanje korisnika u vezanu listu
-        newUser->next = *current;
-        *current = newUser;
+	printf("---------------\n");
 
-        printf("Loaded user: %s\n", title);
+	printf("Enter your name: ");
+	scanf(" %[^\n]", username);
 
-        // UÄitavanje posuÄ‘enih knjiga korisnika
-        if (copies > 0) {
-            if (fscanf(usersFile, "%[^;];", title) != 1) {
-                perror("Error reading borrowed books");
-                exit(EXIT_FAILURE);
-            }
+	currentUser = findUser(userHead, username);
+	if (!currentUser) {
+		printf("User not found!\n");
+		return EXIT_FAILURE;
+	}
 
-            // Razdvajanje posuÄ‘enih knjiga po zarezima
-            char* token = strtok(title, ",");
-            while (token != NULL) {
-                // Ovdje moÅ¾ete izravno dodati posuÄ‘ene knjige korisnicima
-                Book* borrowedBook = findBook(*bookHead, token);
+	printf("Enter the title of the book you want to return: ");
+	scanf(" %[^\n]", bookname);
 
-                if (borrowedBook != NULL) {
-                    borrowBook(newUser, borrowedBook);
-                    printf("Borrowed book: %s\n", token);
-                }
-                else {
-                    printf("Book not found: %s\n", token);
-                }
+	currentBook = findBook(bookHead, bookname);
+	if (!currentBook) {
+		printf("Book not found!\n");
+		return EXIT_FAILURE;
+	}
 
-                token = strtok(NULL, ",");
-            }
-        }
+	printf("Amount of books you want to return (1 - 5): ");
+	scanf("%d", &numBooks);
 
-        fscanf(usersFile, "\n");  // PreskoÄi prelazak u novi red
-    }
+	int booksReturned = returnBook(currentUser, currentBook, numBooks);
 
-    fclose(usersFile);
+	printf("%d book(s) returned successfully by %s.\n", booksReturned, currentUser->name);
 
-    printf("Data loaded successfully.\n");
+	return EXIT_SUCCESS;
 }
