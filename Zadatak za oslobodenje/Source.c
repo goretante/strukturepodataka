@@ -1,20 +1,20 @@
 /*
-"BookHaven" je knjiûnica koja ûeli unaprijediti svoj sustav praÊenja knjiga, autora i korisnika.
+"BookHaven" je knji≈ænica koja ≈æeli unaprijediti svoj sustav pra√¶enja knjiga, autora i korisnika.
 Svaka knjiga ima informacije o naslovu, autoru, godini izdanja i dostupnim primjercima.
-Korisnici mogu posuivati knjige i vratiti ih nakon nekog vremena.
-Program mora korisniku omoguÊiti:
-	a) ispis svih knjiga abecedno (tako da se mogu vidjeti svi podatci o knjizi i korisnici koji trenutno posuuju knjigu) - done
+Korisnici mogu posu√∞ivati knjige i vratiti ih nakon nekog vremena.
+Program mora korisniku omogu√¶iti:
+	a) ispis svih knjiga abecedno (tako da se mogu vidjeti svi podatci o knjizi i korisnici koji trenutno posu√∞uju knjigu) - done
 	b) ispis svih korisnika abecedno (tako da se mogu vidjeti sve knjige koje je neki korisnik posudio) - done
-	c) pretraûivanje knjiga po godini izdanja (tako da se mogu vidjeti sve knjige iz te godine i njihova koliËina) - done
-	d) pretraûivanje knjiga po nazivu autora (tako da se mogu vidjeti sve knjige tog autora i njihova koliËina) - done
+	c) pretra≈æivanje knjiga po godini izdanja (tako da se mogu vidjeti sve knjige iz te godine i njihova koli√®ina) - done
+	d) pretra≈æivanje knjiga po nazivu autora (tako da se mogu vidjeti sve knjige tog autora i njihova koli√®ina) - done
 	e) unos novog korisnika - done
 	f) posudba knjige korisniku - napokon gotovo
-		- moûe viöe primjeraka iste knjige posuditi od puta
-		- korisnik u sebe nikad ne smije imati viöe od 5 knjiga sve skupa
-		- ako pokuöava napravit posudbu koja Êe ga dovesti preko tog broja program treba upozoriti korisnika na to i ispisati mu broj koliko joö knjiga posudit
-		- ako korisnik pita za viöe primjeraka knjige, a knjiûnica na stanju nema nema dovoljno treba korisniku omoguÊiti izbor hoÊe li posudit to öto ima ili ne.
+		- mo≈æe vi≈°e primjeraka iste knjige posuditi od puta
+		- korisnik u sebe nikad ne smije imati vi≈°e od 5 knjiga sve skupa
+		- ako poku≈°ava napravit posudbu koja √¶e ga dovesti preko tog broja program treba upozoriti korisnika na to i ispisati mu broj koliko jo≈° knjiga posudit
+		- ako korisnik pita za vi≈°e primjeraka knjige, a knji≈ænica na stanju nema nema dovoljno treba korisniku omogu√¶iti izbor ho√¶e li posudit to ≈°to ima ili ne.
 	g) povratak knjiga na stanje
-	h) spremi (u datoteku/datoteke spremiti trenutno stanje u knjiûnici, tako da kad se iduÊi put pokrene program moguÊe nastaviti od spremljenog stanja)
+	h) spremi (u datoteku/datoteke spremiti trenutno stanje u knji≈ænici, tako da kad se idu√¶i put pokrene program mogu√¶e nastaviti od spremljenog stanja)
 */
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -126,14 +126,14 @@ int main() {
 			saveToFile(userHead, bookHead);
 			break;
 		case 0:
-			freeMemory(bookHead, userHead);
 			break;
 		default:
 			printf("Wrong option! Try again.\n");
 		}
 	} while (choice != 0);
 
-
+	freeMemory(bookHead, userHead);
+	
 	return 0;
 }
 
