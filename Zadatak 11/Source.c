@@ -1,194 +1,207 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define _CRT_SECURE_NO_WARNINGS
+#define MAX_LINE 1024
 
-// Struktura za grad
-typedef struct Grad {
-    char naziv[50];
-    int broj_stanovnika;
-    struct Grad* left;
-    struct Grad* right;
-} Grad;
+typedef struct city {
+	char city[MAX_LINE];
+	int population;
+	struct city* left;
+	struct city* right;
+}cities_;
 
-// Struktura za državu
-typedef struct Drzava {
-    char naziv[50];
-    char datoteka_gradovi[50];
-    Grad* gradovi;
-    struct Drzava* next;
-} Drzava;
+typedef struct country {
+	char country[MAX_LINE];
+	struct country* next;
+	cities_* cityhead;
+}countries_;
 
-// Struktura za èvor vezane liste država
-typedef struct ListaDrzava {
-    Drzava* drzava;
-    struct ListaDrzava* next;
-} ListaDrzava;
+typedef struct hash {
+	countries_* table[11];
+}hash_;
 
-// Hash tablica
-#define VELICINA_TABLICE 11
+typedef hash_* hash;
+typedef countries_* countries;
+typedef cities_* cities;
 
-// Funkcija za preslikavanje kljuèa
-int hash_funkcija(char naziv[]) {
-    int suma = 0;
-    for (int i = 0; i < 5 && naziv[i] != '\0'; i++) {
-        suma += (int)naziv[i];
-    }
-    return suma % VELICINA_TABLICE;
+int createhash(hash hashhead);
+int readfile(countries head[]);
+int rowscounter(char name[]);
+int listmaker(countries head[], char buffername[], char bufferlink[]);
+int treemaker(cities head, char bufferlink[]);
+cities tree(cities head, char name[], int population);
+int printall(countries table[]);
+int print(countries head);
+int townprint(cities head);
+
+int main()
+{
+	hash_ hashhead;
+
+	createhash(&hashhead.table);
+
+	readfile(&hashhead);
+	printall(hashhead.table);
 }
 
-// Funkcija za dodavanje države u vezanu listu sortiranu po nazivu
-ListaDrzava* dodaj_u_listu(ListaDrzava* head, Drzava* nova_drzava) {
-    ListaDrzava* nova_lista_drzava = (ListaDrzava*)malloc(sizeof(ListaDrzava));
-    nova_lista_drzava->drzava = nova_drzava;
-    nova_lista_drzava->next = NULL;
-
-    if (head == NULL || strcmp(nova_drzava->naziv, head->drzava->naziv) < 0) {
-        nova_lista_drzava->next = head;
-        return nova_lista_drzava;
-    }
-
-    ListaDrzava* trenutna = head;
-    while (trenutna->next != NULL && strcmp(nova_drzava->naziv, trenutna->next->drzava->naziv) > 0) {
-        trenutna = trenutna->next;
-    }
-
-    nova_lista_drzava->next = trenutna->next;
-    trenutna->next = nova_lista_drzava;
-
-    return head;
+int createhash(hash hashhead)
+{
+	for (int i = 0; i < 11; i++)
+	{
+		hashhead->table[i] = malloc(sizeof(countries_));
+		hashhead->table[i]->next = NULL;
+	}
 }
 
-// Funkcija za dodavanje grada u stablo
-Grad* dodaj_grad(Grad* root, char naziv[], int broj_stanovnika) {
-    if (root == NULL) {
-        Grad* novi_grad = (Grad*)malloc(sizeof(Grad));
-        strcpy(novi_grad->naziv, naziv);
-        novi_grad->broj_stanovnika = broj_stanovnika;
-        novi_grad->left = NULL;
-        novi_grad->right = NULL;
-        return novi_grad;
-    }
+int readfile(countries head[])
+{
+	char buffername[MAX_LINE];
+	char bufferlink[MAX_LINE];
+	int rows;
 
-    if (broj_stanovnika < root->broj_stanovnika) {
-        root->left = dodaj_grad(root->left, naziv, broj_stanovnika);
-    }
-    else if (broj_stanovnika >= root->broj_stanovnika) {
-        root->right = dodaj_grad(root->right, naziv, broj_stanovnika);
-    }
+	rows = rowscounter("drzave.txt");
+	FILE* fptr = fopen("drzave.txt", "r");
+	if (fptr == NULL)
+	{
+		return -1;
+	}
 
-    return root;
+	for (int i = 0; i < rows; i++)
+	{
+		fscanf(fptr, "%s %s", buffername, bufferlink);
+		listmaker(head, buffername, bufferlink);
+	}
+
+	fclose(fptr);
 }
 
-// Funkcija za ispisivanje gradova u inorder poredak
-void ispisi_gradove(Grad* root) {
-    if (root != NULL) {
-        ispisi_gradove(root->left);
-        printf("%s, %d\n", root->naziv, root->broj_stanovnika);
-        ispisi_gradove(root->right);
-    }
+int rowscounter(char name[])
+{
+	int rownumber = 0;
+	char buffer[MAX_LINE];
+
+	FILE* fptr = fopen(name, "r");
+
+	if (fptr == NULL)
+	{
+		return -1;
+	}
+
+	while (!feof(fptr))
+	{
+		fgets(buffer, MAX_LINE, fptr);
+		rownumber++;
+	}
+
+	fclose(fptr);
+
+	return rownumber;
 }
 
-// Funkcija za pretragu gradova odreðene države s brojem stanovnika veæim od zadane vrijednosti
-void pretraga_gradova(Drzava* drzava, int min_broj_stanovnika) {
-    printf("Gradovi u %s sa brojem stanovnika vecim od %d:\n", drzava->naziv, min_broj_stanovnika);
-    ispisi_gradove(drzava->gradovi);
+int listmaker(countries head[], char buffername[], char bufferlink[])
+{
+	int ascii = 0;
+
+	for (int i = 0; i < 5; i++)							//ako ima manje od 5 znakova svejedno ga broji
+	{
+		if (buffername[i] != '\0')
+		{
+			ascii += (int)buffername[i];
+		}
+		else
+		{
+			i = 5;
+		}
+	}
+
+	ascii %= 11;
+
+	countries ptr = malloc(sizeof(countries_));
+	strcpy(ptr->country, buffername);
+
+	ptr->cityhead = malloc(sizeof(cities_));
+	ptr->cityhead->right = NULL;
+	ptr->cityhead->left = NULL;
+
+	treemaker(ptr->cityhead, bufferlink);
+
+	ptr->next = head[ascii]->next;
+	head[ascii]->next = ptr;
 }
 
-int main() {
-    // Inicijalizacija hash tablice
-    ListaDrzava* hash_tablica[VELICINA_TABLICE];
-    for (int i = 0; i < VELICINA_TABLICE; i++) {
-        hash_tablica[i] = NULL;
-    }
+int treemaker(cities head, char bufferlink[])
+{
+	int rows;
+	char buffername[MAX_LINE];
+	int population;
 
-    // Èitanje datoteke drzave.txt
-    FILE* datoteka_drzave = fopen("drzave.txt", "r");
-    if (datoteka_drzave == NULL) {
-        perror("Greska pri otvaranju datoteke drzave.txt");
-        exit(EXIT_FAILURE);
-    }
+	rows = rowscounter(bufferlink);
 
-    char naziv_drzave[50];
-    char datoteka_gradovi[50];
-    while (fscanf(datoteka_drzave, "%s %s", naziv_drzave, datoteka_gradovi) == 2) {
-        // Dodavanje države u hash tablicu
-        int kljuc = hash_funkcija(naziv_drzave);
-        Drzava* nova_drzava = (Drzava*)malloc(sizeof(Drzava));
-        strcpy(nova_drzava->naziv, naziv_drzave);
-        strcpy(nova_drzava->datoteka_gradovi, datoteka_gradovi);
-        nova_drzava->gradovi = NULL;
-        nova_drzava->next = NULL;
+	FILE* fptr = fopen(bufferlink, "r");
 
-        hash_tablica[kljuc] = dodaj_u_listu(hash_tablica[kljuc], nova_drzava);
+	for (int i = 0; i < rows; i++)
+	{
+		fscanf(fptr, "%s %d", buffername, &population);
+		head->right = tree(head->right, buffername, population);
+	}
+	return 0;
+}
 
-        // Èitanje datoteke s gradovima
-        FILE* datoteka_gradovi = fopen(datoteka_gradovi, "r");
-        if (datoteka_gradovi == NULL) {
-            perror("Greska pri otvaranju datoteke s gradovima");
-            exit(EXIT_FAILURE);
-        }
+cities tree(cities head, char name[], int population)
+{
+	if (head == NULL)
+	{
+		cities ptr = malloc(sizeof(cities_));
+		strcpy(ptr->city, name);
+		ptr->population = population;
+		ptr->left = NULL;
+		ptr->right = NULL;
+		return ptr;
+	}
+	else if (strcmp(head->city, name) >= 0)
+	{
+		head->left = tree(head->left, name, population);
+	}
+	else if (strcmp(head->city, name) < 0)
+	{
+		head->right = tree(head->right, name, population);
+	}
 
-        char naziv_grada[50];
-        int broj_stanovnika;
-        Grad* stablo_gradova = NULL;
+	return head;
+}
 
-        // Èitanje gradova iz datoteke i dodavanje u stablo
-        while (fscanf(datoteka_gradovi, "%s %d", naziv_grada, &broj_stanovnika) == 2) {
-            stablo_gradova = dodaj_grad(stablo_gradova, naziv_grada, broj_stanovnika);
-        }
+int printall(countries table[])
+{
+	for (int i = 0; i < 11; i++)
+	{
+		if (table[i]->next != NULL)
+		{
+			print(table[i]->next);
+		}
+	}
+}
 
-        // Povezivanje stabla gradova s odgovarajuæom državom
-        nova_drzava->gradovi = stablo_gradova;
+int print(countries head)
+{
+	while (head != NULL)
+	{
+		printf("%s\n", head->country);
+		townprint(head->cityhead->right);
+		head = head->next;
+		printf("\n");
+	}
+}
 
-        fclose(datoteka_gradovi);
-    }
-
-    // Zatvaranje datoteke drzave.txt
-    fclose(datoteka_drzave);
-
-    // Ispis država i gradova
-    for (int i = 0; i < VELICINA_TABLICE; i++) {
-        ListaDrzava* trenutna_lista = hash_tablica[i];
-        while (trenutna_lista != NULL) {
-            printf("Drzava: %s\n", trenutna_lista->drzava->naziv);
-            printf("Gradovi:\n");
-            ispisi_gradove(trenutna_lista->drzava->gradovi);
-            printf("\n");
-            trenutna_lista = trenutna_lista->next;
-        }
-    }
-
-    // Pretraga gradova odreðene države
-    char trazena_drzava[50];
-    int min_broj_stanovnika;
-
-    printf("Unesite ime drzave za pretragu: ");
-    scanf("%s", trazena_drzava);
-
-    printf("Unesite minimalan broj stanovnika: ");
-    scanf("%d", &min_broj_stanovnika);
-
-    int kljuc_pretrage = hash_funkcija(trazena_drzava);
-    ListaDrzava* trenutna_lista = hash_tablica[kljuc_pretrage];
-    while (trenutna_lista != NULL) {
-        if (strcmp(trenutna_lista->drzava->naziv, trazena_drzava) == 0) {
-            pretraga_gradova(trenutna_lista->drzava, min_broj_stanovnika);
-            break;
-        }
-        trenutna_lista = trenutna_lista->next;
-    }
-
-    // Oslobaðanje memorije
-    for (int i = 0; i < VELICINA_TABLICE; i++) {
-        while (hash_tablica[i] != NULL) {
-            ListaDrzava* temp_lista = hash_tablica[i];
-            hash_tablica[i] = hash_tablica[i]->next;
-            free(temp_lista->drzava);
-            free(temp_lista);
-        }
-    }
-
-    return 0;
+int townprint(cities head)
+{
+	if (head == NULL)
+	{
+		return 0;
+	}
+	printf("%s %d\n", head->city, head->population);
+	townprint(head->left);
+	townprint(head->right);
 }
